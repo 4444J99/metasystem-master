@@ -9,7 +9,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "performance",
@@ -40,5 +41,8 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.0"
+  },
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
   }
 }
