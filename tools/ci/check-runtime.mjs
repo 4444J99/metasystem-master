@@ -14,6 +14,11 @@ export const MANIFESTS = Object.freeze([
   'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/server/package.json',
 ]);
 
+/**
+ * Test a stable Node version against NODE_ENGINE without package dependencies.
+ * @param {unknown} version - A complete major.minor.patch version string.
+ * @returns {boolean} False for unsupported versions, prereleases, or malformed input.
+ */
 export function isSupportedNode(version) {
   if (typeof version !== 'string') return false;
   const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\+[0-9A-Za-z.-]+)?$/.exec(version);
@@ -23,12 +28,24 @@ export function isSupportedNode(version) {
   return major >= 26 || major === 24 || (major === 22 && minor >= 12);
 }
 
+/**
+ * Refuse execution outside the declared stable Node runtime range.
+ * @param {unknown} [version=process.versions.node] - Runtime version to validate.
+ * @returns {void}
+ * @throws {Error} When the supplied runtime is unsupported or malformed.
+ */
 export function assertSupportedNode(version = process.versions.node) {
   if (!isSupportedNode(version)) {
     throw new Error(`Unsupported Node ${version}; required ${NODE_ENGINE}. Run nvm use before installing.`);
   }
 }
 
+/**
+ * Check every required manifest for runtime and substantive typecheck contracts.
+ * @param {string} [root=ROOT] - Repository root containing the required manifests.
+ * @returns {number} Number of validated manifests.
+ * @throws {Error} For missing/invalid JSON, runtime drift, or missing typechecks.
+ */
 export function checkManifests(root = ROOT) {
   for (const path of MANIFESTS) {
     let manifest;

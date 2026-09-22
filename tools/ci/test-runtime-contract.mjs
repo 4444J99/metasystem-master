@@ -21,6 +21,11 @@ test('real manifests consistently declare engines and substantive typechecks', (
   assert.equal(checkManifests(), 6);
 });
 
+/**
+ * Materialize valid manifests in a temporary root and register test cleanup.
+ * @param {import('node:test').TestContext} t - Test context owning the directory.
+ * @returns {string} Absolute path of the disposable manifest root.
+ */
 function fixture(t) {
   const root = mkdtempSync(join(tmpdir(), 'metasystem-runtime-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
