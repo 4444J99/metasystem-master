@@ -5,7 +5,7 @@
  * batching, and publishing to the parameter bus.
  */
 
-import { v4 as uuidv4 } from 'crypto';
+import { randomUUID } from 'crypto';
 import {
   type AudienceInput,
   AudienceInputSchema,
@@ -139,7 +139,7 @@ export class AudienceInputsHandler {
     
     // Create input record
     const input: AudienceInput = {
-      id: uuidv4(),
+      id: randomUUID(),
       clientId,
       sessionId: this.sessionId,
       timestamp: now,

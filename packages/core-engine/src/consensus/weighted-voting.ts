@@ -112,6 +112,39 @@ export function calculateWeight(
   return Math.max(0.001, Math.min(1, weight)); // Clamp to avoid zero weights
 }
 
+function calculateConsensusWeights(
+  inputs: AudienceInput[],
+  config: WeightingConfig
+): number[] {
+  if (inputs.length <= 1) return inputs.map(() => 1.0);
+
+  const sorted = inputs
+    .map((input, index) => ({ index, value: input.value }))
+    .sort((a, b) => a.value - b.value);
+  const weights = new Array<number>(inputs.length);
+  let left = 0;
+  let right = 0;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const value = sorted[i].value;
+
+    while (value - sorted[left].value > config.clusterThreshold) {
+      left++;
+    }
+
+    while (
+      right + 1 < sorted.length &&
+      sorted[right + 1].value - value <= config.clusterThreshold
+    ) {
+      right++;
+    }
+
+    weights[sorted[i].index] = (right - left) / (inputs.length - 1);
+  }
+
+  return weights;
+}
+
 // =============================================================================
 // WEIGHTED INPUT GENERATION
 // =============================================================================
@@ -125,11 +158,12 @@ export function weightInputs(
   config: WeightingConfig = DEFAULT_WEIGHTING_CONFIG
 ): WeightedInput[] {
   const currentTime = Date.now();
+  const consensusWeights = calculateConsensusWeights(inputs, config);
   
-  return inputs.map(input => {
+  return inputs.map((input, index) => {
     const spatialWeight = calculateSpatialWeight(input.location, stagePosition, config);
     const temporalWeight = calculateTemporalWeight(input.timestamp, currentTime, config);
-    const consensusWeight = calculateConsensusWeight(input, inputs, config);
+    const consensusWeight = consensusWeights[index];
     
     const weight = 
       config.spatialAlpha * spatialWeight +
@@ -186,23 +220,44 @@ export function standardDeviation(inputs: WeightedInput[]): number {
 }
 
 /**
- * Remove outliers using z-score method.
+ * Remove outliers using robust modified z-score.
  */
 export function removeOutliers(
   inputs: WeightedInput[],
   threshold: number = 2.5
 ): WeightedInput[] {
   if (inputs.length < 4) return inputs;
-  
-  const mean = weightedMean(inputs);
-  const std = standardDeviation(inputs);
-  
-  if (std < 0.001) return inputs; // No variance
-  
+
+  const medianValue = median(inputs.map(input => input.value));
+  const deviations = inputs.map(input => Math.abs(input.value - medianValue));
+  const medianAbsoluteDeviation = median(deviations);
+
+  if (medianAbsoluteDeviation < 0.001) {
+    const hasVariance = deviations.some(deviation => deviation > 0.001);
+    if (!hasVariance) return inputs;
+
+    return inputs.filter(input => Math.abs(input.value - medianValue) <= 0.15);
+  }
+
   return inputs.filter(input => {
-    const zScore = Math.abs((input.value - mean) / std);
-    return zScore <= threshold;
+    const modifiedZScore = (
+      0.6745 * Math.abs(input.value - medianValue)
+    ) / medianAbsoluteDeviation;
+    return modifiedZScore <= threshold;
   });
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 1) {
+    return sorted[middle];
+  }
+
+  return (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
 /**
