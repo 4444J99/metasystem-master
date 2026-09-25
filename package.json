@@ -13,11 +13,12 @@
     "build": "pnpm -r --filter './packages/*' run build",
     "dev": "pnpm -r --filter './packages/*' run dev",
     "test": "pnpm -r run test",
-    "lint": "pnpm -r run lint",
+    "lint": "eslint 'packages/*/src/**/*.{ts,tsx,js,mjs}' 'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/{client,server}/src/**/*.{ts,tsx}' --max-warnings 0",
     "clean": "pnpm -r exec rm -rf dist node_modules",
     "typecheck": "pnpm -r --filter './packages/*' run typecheck",
     "check:runtime": "node tools/ci/check-runtime.mjs",
-    "test:runtime": "node --test tools/ci/test-runtime-contract.mjs"
+    "test:runtime": "node --test tools/ci/test-runtime-contract.mjs",
+    "test:lint": "node --test tools/ci/test-lint-contract.mjs"
   },
   "engines": {
     "node": "^22.12.0 || ^24.0.0 || >=26.0.0",

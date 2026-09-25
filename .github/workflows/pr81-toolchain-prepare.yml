@@ -1,0 +1,122 @@
+name: PR81 Toolchain Preparation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/pr81-toolchain-prepare.yml
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    if: github.event.pull_request.number == 81 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+      - name: Resolve exact lint tooling without running dependency scripts
+        run: pnpm add -Dw --save-exact --ignore-scripts --lockfile-only eslint@9 @typescript-eslint/parser@8
+      - name: Prepare metadata and inspectable files
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, pathlib, shutil, subprocess
+          root = pathlib.Path('.')
+          output = pathlib.Path('/tmp/prepared')
+          output.mkdir()
+          paths = ['package.json', 'pnpm-lock.yaml',
+            'packages/performance-sdk/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/client/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/server/package-lock.json']
+          for path in paths[2:]:
+              target = root / path
+              lock = json.loads(target.read_text())
+              manifest = json.loads(target.with_name('package.json').read_text())
+              lock['packages']['']['engines'] = manifest['engines']
+              target.write_text(json.dumps(lock, indent=2) + '\n')
+          metadata = {'head_sha': os.environ['EXPECTED_HEAD'],
+            'checkout_sha': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(), 'files': []}
+          for index, path in enumerate(paths):
+              source = root / path
+              name = f'file-{index}.txt'
+              shutil.copyfile(source, output / name)
+              metadata['files'].append({'path': path, 'file': name,
+                'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
+          (output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
+          (output / 'changes.patch').write_bytes(subprocess.check_output(['git','diff','--',*paths]))
+          subprocess.run(['git','diff','--check'],check=True)
+          print(json.dumps(metadata, indent=2))
+          print((root / 'package.json').read_text())
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr81-prepared-tooling-${{ github.event.pull_request.head.sha }}
+          path: /tmp/prepared/
+          if-no-files-found: error
+          retention-days: 7
+
+  stage-immutable-blobs:
+    # Fresh runner: no checkout, dependency install, or execution of downloaded data.
+    # This stages immutable blobs only. No branch, status, policy, or merge writes.
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: pr81-prepared-tooling-${{ github.event.pull_request.head.sha }}
+          path: prepared
+      - name: Validate fixed data and stage blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import base64, hashlib, json, os, pathlib, urllib.request
+          root = pathlib.Path('prepared')
+          allowed = ['package.json', 'pnpm-lock.yaml',
+            'packages/performance-sdk/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/client/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/server/package-lock.json']
+          metadata = json.loads((root/'metadata.json').read_text())
+          assert metadata['head_sha'] == os.environ['EXPECTED_HEAD']
+          assert [entry['path'] for entry in metadata['files']] == allowed
+          records = []
+          for index, entry in enumerate(metadata['files']):
+              assert entry['file'] == f'file-{index}.txt'
+              path = root / entry['file']
+              assert path.is_file() and not path.is_symlink() and path.stat().st_size < 4000000
+              data = path.read_bytes()
+              data.decode('utf-8')
+              assert hashlib.sha256(data).hexdigest() == entry['sha256']
+              body = json.dumps({'content': base64.b64encode(data).decode(), 'encoding': 'base64'}).encode()
+              request = urllib.request.Request(
+                'https://api.github.com/repos/4444J99/metasystem-master/git/blobs', data=body,
+                headers={'Authorization': 'Bearer '+os.environ['GH_TOKEN'],
+                         'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'}, method='POST')
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  result = json.load(response)
+              expected = hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
+              assert result['sha'] == expected
+              records.append({'path': entry['path'], 'sha': expected, 'sha256': entry['sha256']})
+          receipt = {'head_sha': metadata['head_sha'], 'files': records, 'refs_updated': False}
+          pathlib.Path('blob-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          print(json.dumps(receipt, indent=2))
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr81-tooling-blob-receipt-${{ github.event.pull_request.head.sha }}
+          path: blob-receipt.json
+          if-no-files-found: error
+          retention-days: 7
