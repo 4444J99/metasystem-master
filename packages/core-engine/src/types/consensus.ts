@@ -1,6 +1,6 @@
 /**
  * Consensus Types for Omni-Dromenon-Engine
- * 
+ *
  * Defines weighted voting, audience input aggregation,
  * and consensus result structures.
  */
@@ -35,7 +35,7 @@ export interface AudienceInput {
   sessionId: string;
   timestamp: number;
   parameter: string;
-  value: number; // Normalized 0-1
+  value: number;
   location?: {
     x: number;
     y: number;
@@ -56,7 +56,7 @@ export const AudienceInputSchema = z.object({
     y: z.number(),
     zone: z.string().optional(),
   }).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 // =============================================================================
@@ -64,20 +64,13 @@ export const AudienceInputSchema = z.object({
 // =============================================================================
 
 export interface WeightingConfig {
-  // Spatial weighting (distance from stage)
   spatialAlpha: number;
   spatialDecayRate: number;
-  
-  // Temporal weighting (recency of input)
   temporalBeta: number;
   temporalWindowMs: number;
   temporalDecayRate: number;
-  
-  // Consensus clustering
   consensusGamma: number;
   clusterThreshold: number;
-  
-  // Smoothing
   smoothingFactor: number;
   outlierThreshold: number;
 }
@@ -91,10 +84,9 @@ export const DEFAULT_WEIGHTING_CONFIG: WeightingConfig = {
   consensusGamma: 0.2,
   clusterThreshold: 0.1,
   smoothingFactor: 0.3,
-  outlierThreshold: 2.5, // Standard deviations
+  outlierThreshold: 2.5,
 };
 
-// Genre-specific presets
 export const GENRE_PRESETS: Record<string, Partial<WeightingConfig>> = {
   electronic_music: {
     spatialAlpha: 0.3,
@@ -141,12 +133,10 @@ export interface WeightedInput extends AudienceInput {
 export interface ConsensusResult {
   parameter: string;
   value: number;
-  confidence: number; // 0-1, based on input agreement
+  confidence: number;
   inputCount: number;
   timestamp: number;
   mode: ConsensusMode;
-  
-  // Analytics
   rawMean: number;
   weightedMean: number;
   standardDeviation: number;
@@ -170,7 +160,7 @@ export interface PerformerOverride {
   parameter: string;
   value: number;
   mode: 'absolute' | 'blend' | 'lock';
-  blendFactor?: number; // 0-1, how much performer input vs audience
+  blendFactor?: number;
   expiresAt?: number;
   reason?: string;
 }
@@ -213,6 +203,6 @@ export interface InputCluster {
 export interface ClusterAnalysis {
   clusters: InputCluster[];
   dominantCluster: InputCluster | null;
-  entropy: number; // Measure of input dispersion
+  entropy: number;
   bimodality: boolean;
 }

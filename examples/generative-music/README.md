@@ -1,81 +1,82 @@
 # Example: Generative Music
 
-Reference implementation demonstrating audience-controlled generative music synthesis.
+Legacy proof-of-concept demonstrating audience-controlled generative music synthesis through a standalone Node.js and Socket.IO server.
 
-## Validated Performance
+## Evidence status
 
-| Metric | Target | Actual |
-|--------|--------|--------|
-| P95 Latency | <100ms | **2ms** |
-| Message Delivery | >95% | **100%** |
-| Error Rate | <1% | **0%** |
+This example contains inspectable source for audience input collection, weighted aggregation, performer override, state broadcast, and browser-based audio control. The repository does **not** currently contain a preserved, reproducible artifact supporting earlier claims of 2 ms P95 latency, 100% message delivery, 0% errors, a particular participant count, or live-performance validation.
 
-## Quick Start
+The strict benchmark introduced in `packages/core-engine` measures a different and narrower object: in-process `computeConsensus` only. Its results must not be presented as network, delivery, concurrency, audience-device, or performance evidence for this standalone example.
+
+## Quick start
 
 ```bash
 npm install
 npm start
 
-# Open in browser:
-# Audience:   http://localhost:3000
-# Performer:  http://localhost:3000/performer.html
+# Audience:  http://localhost:3000
+# Performer: http://localhost:3000/performer.html
 ```
+
+Successful local startup would establish only that the example runs in the declared environment. It would not establish production readiness or the performance claims listed above.
 
 ## Architecture
 
-```
-┌──────────────────┐     WebSocket      ┌─────────────────┐
-│  Audience (N)    │ ─────────────────► │   CAL Server    │
-│  (smartphones)   │ ◄───────────────── │  (consensus)    │
-└──────────────────┘     State Updates  └────────┬────────┘
-                                                 │
-┌──────────────────┐     WebSocket              │
-│    Performer     │ ◄──────────────────────────┘
-│   (dashboard)    │ ──────► Override
-└──────────────────┘
+```text
+Audience clients --Socket.IO--> standalone server --state updates--> all clients
+                                     |
+                                     +--> weighted temporal/proximity aggregation
+                                     +--> performer override state
 ```
 
 ## Parameters
 
-| Parameter | Range | Effect |
-|-----------|-------|--------|
-| Mood | 0-1 | Dark ↔ Bright (filter, reverb) |
-| Tempo | 0-1 | Slow ↔ Fast (BPM mapping) |
-| Intensity | 0-1 | Calm ↔ Chaotic (dynamics, density) |
-| Density | 0-1 | Sparse ↔ Dense (note count) |
+| Parameter | Range | Intended effect |
+|---|---:|---|
+| Mood | 0-1 | Dark to bright filtering and reverb |
+| Tempo | 0-1 | Slow to fast BPM mapping |
+| Intensity | 0-1 | Calm to chaotic dynamics and density |
+| Density | 0-1 | Sparse to dense note activity |
 
-## Consensus Algorithm
+## Consensus algorithm
 
-Uses weighted temporal-proximity consensus:
+The standalone example uses temporal decay and proximity to the current state:
 
+```text
+weight = temporal_decay * consensus_proximity
 ```
-weight = temporal_decay × consensus_proximity
-       = e^(-age/window × β) × (1 - distance × γ)
-```
 
-- `β` (temporal): 0.6 — Recent inputs weighted higher
-- `γ` (consensus): 0.4 — Inputs near current state weighted higher
+- `BETA_TEMPORAL = 0.6`: controls recency weighting.
+- `GAMMA_CONSENSUS = 0.4`: controls proximity weighting.
+- `CONSENSUS_SMOOTHING = 0.15`: controls interpolation toward the computed value.
+
+These constants are implementation choices, not validated optimal parameters.
 
 ## Files
 
-```
+```text
 src/
 ├── server/
-│   └── index.js          # CAL server + consensus
+│   └── index.js          # standalone server and aggregation logic
 └── public/
-    ├── index.html        # Audience interface
-    ├── performer.html    # Performer dashboard
-    ├── style.css         # Shared styles
-    └── client.js         # Client-side audio (Tone.js)
+    ├── index.html        # audience interface
+    ├── performer.html    # performer interface
+    ├── style.css         # shared styles
+    └── client.js         # client-side audio
 ```
 
-## Benchmarking
+## Measurement gate
 
-```bash
-npm run benchmark
-```
+Before this example may carry latency, delivery, error-rate, concurrency, or rehearsal claims, it needs:
 
-Outputs latency percentiles (P50, P95, P99) under simulated load.
+1. a versioned workload and environment definition;
+2. instrumented end-to-end event timing with synchronized clock semantics;
+3. delivery and error accounting;
+4. repeated runs with preserved raw data and summaries;
+5. a distinction among local simulation, network test, rehearsal, and live performance;
+6. independent review of the measurement procedure.
+
+See `docs/reproducibility/core-engine-evidence-status.md` for the repository-wide claim register.
 
 ## License
 

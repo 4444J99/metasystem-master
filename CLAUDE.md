@@ -1,194 +1,129 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with this monorepo.
+This file provides repository-specific guidance to coding agents working in `metasystem-master`.
 
-## Project Overview
+## Read first
 
-**omni-dromenon-machina** is a real-time audience-participatory performance system. It enables collective audience control over live artistic performances through weighted consensus algorithms, with performers maintaining override authority.
+1. If `.conductor/active-handoff.md` exists, read and obey it before editing.
+2. Read [`docs/reproducibility/core-engine-evidence-status.md`](docs/reproducibility/core-engine-evidence-status.md) before repeating any performance, capacity, deployment, rehearsal, or live-performance claim.
+3. Treat active source, design documents, grant drafts, deployment scaffolding, and historical cold storage as different evidence classes.
+4. Do not convert source code, a passing unit test, a benchmark, a deployment file, or a portfolio page into evidence for a broader claim.
 
-**Core innovation:** Spatial and temporal weighting of audience inputs creates emergent group dynamics while preserving performer agency. P95 latency target: <2ms.
+## Project overview
 
-## Monorepo Structure
+Omni-Dromenon is a research and artistic software system for audience-participatory performance. The repository contains a TypeScript core engine, interface packages, examples, infrastructure scaffolding, and extensive documentation. Its central design is weighted audience aggregation with explicit performer override authority.
 
-```
-omni-dromenon-machina/
-  .config/                      Tooling configs
-  .github/                      CI/CD, community health
-  docs/                         All documentation
-    academic/                   Research papers
-    architecture/               System architecture
-    business/                   Prospecting, grant narratives
-    community/                  Artist toolkit, templates
-    flow-patterns/              Harmonic flow system
-    guides/                     Setup, deployment, reference
-    plans/                      Development plans
-    reference/                  POC v0.1.0
-    specs/                      Technical specifications
-  examples/                     Reference implementations
-    generative-music/           Music POC
-    generative-visual/          Visual art reference
-    choreographic-interface/    Choreography reference
-    theatre-dialogue/           Theatre/dialogue reference
-  infra/                        Infrastructure-as-code
-    docker/                     Dockerfiles, compose
-    gcp/                        Terraform, Cloud Run
-    nginx/                      Reverse proxy config
-    web/                        Static site (index.html)
-  packages/                     Source code (pnpm workspaces)
-    core-engine/                @omni-dromenon/core-engine (TypeScript)
-    performance-sdk/            @omni-dromenon/performance-sdk (React)
-    client-sdk/                 @omni-dromenon/client-sdk (TypeScript)
-    audio-synthesis-bridge/     @omni-dromenon/audio-synthesis-bridge (TypeScript)
-    orchestrate/                Multi-AI orchestration CLI (Python)
-  tools/                        Build scripts, utilities
-    scripts/                    Python/bash automation
-    dreamcatcher/               Async sovereignty module
+**Current evidence state:** proof-of-concept under reproducibility and claim repair. The strict core workflow has not yet produced runner step logs or a JSON benchmark artifact for the current repair branch. No latency, connection-capacity, delivery, error-rate, deployment, rehearsal, live-performance, production-readiness, usability, or artistic-outcome result is currently established.
+
+## Repository structure
+
+```text
+packages/
+  core-engine/               consensus, bus, server, OSC, types
+  performance-sdk/           performer and audience interfaces
+  client-sdk/                client integration
+  audio-synthesis-bridge/    audio and OSC paths
+  orchestrate/               separate Python orchestration package
+
+examples/
+  generative-music/
+  generative-visual/
+  choreographic-interface/
+  theatre-dialogue/
+
+infra/                       deployment scaffolding
+docs/                        active docs, design records, proposals, archive
 ```
 
-## Development Commands
+Directory presence does not establish build, deployment, or operation.
 
-### Workspace-Wide
+## Core evidence commands
+
+Run from the repository root with the locked dependency graph available:
 
 ```bash
-pnpm install          # Install all dependencies
-pnpm build            # Build all TypeScript packages
-pnpm dev              # Start all packages in dev mode
-pnpm test             # Run all tests
-pnpm run typecheck    # Type-check all packages
+pnpm install --frozen-lockfile
+pnpm --filter @omni-dromenon/core-engine typecheck
+pnpm --filter @omni-dromenon/core-engine test
+pnpm --filter @omni-dromenon/core-engine test:bench -- \
+  --output benchmark-results/consensus-baseline.json
 ```
 
-### Core Engine
+The benchmark is implemented at `packages/core-engine/src/benchmarks/consensus-bench.ts`. It measures only in-process `computeConsensus` calls, asserts no threshold, and excludes network, Socket.IO, Redis, OSC, rendering, devices, delivery, concurrency, rehearsal, and live-performance behavior.
 
-```bash
-cd packages/core-engine
-pnpm dev              # Development with hot reload (tsx)
-pnpm build            # Build TypeScript
-pnpm test             # Run tests (Vitest)
-pnpm run test:bench   # Benchmark consensus latency
+## Core architecture
+
+```text
+Audience input -> parameter bus -> weighted consensus -> performer override -> outputs
 ```
 
-### Performance SDK
+Relevant source:
 
-```bash
-cd packages/performance-sdk
-pnpm dev              # Development server (Vite)
-pnpm build            # Build components
-pnpm test             # Run tests
-pnpm run lint         # Lint TypeScript/React
-```
+- `packages/core-engine/src/consensus/weighted-voting.ts`
+- `packages/core-engine/src/consensus/parameter-aggregation.ts`
+- `packages/core-engine/src/bus/`
+- `packages/core-engine/src/server.ts`
+- `packages/core-engine/src/osc/`
+- `packages/core-engine/src/types/`
+- `packages/core-engine/tests/`
 
-### Examples
+### Performer override modes
 
-All examples follow the same pattern:
-```bash
-cd examples/{generative-music,generative-visual,choreographic-interface,theatre-dialogue}
-pnpm dev              # Start dev server
-pnpm test             # Run integration tests
-```
+- `absolute`: replace the consensus value;
+- `blend`: combine performer and audience values;
+- `lock`: hold the performer-selected value.
 
-### Docker
+These are implemented interface semantics. Their usability, fairness, and artistic adequacy require separate evaluation.
 
-```bash
-docker compose up             # Full stack (core + SDK + Redis + Nginx)
-docker compose up core-engine # Single service
-```
+## Correctness and reproducibility rules
 
-### Python Orchestrate
+- Supply one explicit evaluation clock in deterministic tests and benchmarks.
+- Keep unit tests deterministic; do not use wall-clock latency as a unit-test pass/fail assertion.
+- Preserve negative results and counterexamples.
+- Runtime schemas and mathematical preconditions are not interchangeable; direct TypeScript callers can bypass validation.
+- The current agreement calculation is pairwise and gives whole-call consensus computation `Theta(n^2)` time.
+- A future numerical benchmark result must be named as in-process consensus compute time in its exact recorded environment.
+- Do not call an example "validated" because it starts locally.
 
-```bash
-cd packages/orchestrate
-pip install -r requirements.txt
-python src/orchestrator.py
-```
+## Performance targets
 
-## System Architecture
+Historical documents contain targets such as low WebSocket latency, low consensus compute time, bounded memory, and 1,000-client capacity. These are **unvalidated design targets**, not achieved results.
 
-### Three-Layer System
+Before reinstating a number as a result, require:
 
-1. **Core Engine** (`packages/core-engine/`)
-   - WebSocket server (Express + Socket.io): `/audience` and `/performer` namespaces
-   - Parameter Bus: Event-driven pub/sub (`src/bus/parameter-bus.ts`)
-   - Consensus Engine: Weighted voting (`src/consensus/weighted-voting.ts`, `src/consensus/parameter-aggregation.ts`)
-   - OSC Bridge: External synthesizer integration (`src/osc/osc-bridge.ts`)
+1. exact source revision and lock state;
+2. declared hardware, runtime, network, and workload;
+3. preserved raw and summary artifacts;
+4. repeated runs including failures and slow runs;
+5. scope-specific wording;
+6. a distinction among in-process computation, end-to-end networking, deployment, rehearsal, and live performance.
 
-2. **Performance SDK** (`packages/performance-sdk/`)
-   - React components: `performer-dashboard/`, `audience-interface/`, `shared/`
+## Documentation states
 
-3. **Audio Synthesis Bridge** (`packages/audio-synthesis-bridge/`)
-   - OSC server + WebAudio engine + parameter mapping
+- `docs/reproducibility/`: current evidence and claim controls.
+- active technical docs: must match the exact implementation or identify themselves as proposals.
+- `docs/business/GRANT_MATERIALS/`: proposal material, not proof that described events occurred.
+- `docs/reference/omnidramanon-cold-storage/`: historical records; preserve them, but never inherit their claims as current evidence.
 
-### Data Flow
+## Coding conventions
 
-```
-Audience Input -> Parameter Bus -> Consensus Aggregator -> Performer Override -> Output
-                       |                                          |
-                  Batch Processing                         WebSocket Broadcast
-                       |                                          |
-               Weighted Computation                    Dashboard + OSC
-```
+- TypeScript: strict mode, two-space indentation, semicolons.
+- Server modules: kebab-case filenames.
+- React components: PascalCase.
+- Package scope: `@omni-dromenon/*`.
+- Node requirement declared by the core package: `>=18.0.0`.
+- Keep changes narrow and evidence-linked.
 
-## Key Patterns
+## Completion discipline
 
-### Parameter Bus Events (`BusEvent` enum)
-- `AUDIENCE_INPUT_BATCH` - Batched audience inputs
-- `CONSENSUS_UPDATE` - New consensus value
-- `PERFORMER_OVERRIDE` - Performer override applied
-- `SESSION_START/PAUSE/RESUME/END` - Session lifecycle
+At the end of a code-changing session:
 
-### Performer Override Modes
-- `absolute` - Replace consensus entirely
-- `blend` - Mix with consensus (blendFactor)
-- `lock` - Freeze parameter
-
-### Consensus Computation Steps
-1. Collect inputs within `inputWindowMs` window
-2. Apply spatial weights (distance from stage)
-3. Apply temporal weights (exponential decay)
-4. Apply consensus weights (clustering alignment)
-5. Compute weighted average
-6. Apply smoothing and outlier rejection
-7. Check for performer overrides
-8. Broadcast result
-
-## Configuration
-
-### Environment Variables (core-engine)
-- `PORT` (default: 3000)
-- `REDIS_URL` (default: localhost:6379)
-- `OSC_OUT_PORT` (default: 57121)
-- `CONSENSUS_WINDOW_MS` (default: 1000)
-
-### Consensus Weighting
-Configured in `packages/core-engine/src/types/consensus.ts`:
-- `spatialAlpha`, `temporalBeta`, `consensusGamma`
-- Genre-specific presets: `GENRE_PRESETS`
-
-## Testing
-
-- **Framework:** Vitest for all TypeScript packages
-- **Core tests:** `packages/core-engine/tests/`
-- **Benchmarks:** `packages/core-engine/benchmarks/`
-- Import: `import { describe, it, expect } from 'vitest'`
-
-## Coding Style
-
-- TypeScript: 2-space indent, semicolons, strict mode
-- File naming: `kebab-case` for server modules, PascalCase for React components
-- Package scope: `@omni-dromenon/*`
-- Node version: >=18.0.0
-
-## Technical Constraints
-
-- Two WebSocket namespaces: `/audience` (many clients) and `/performer` (few, authenticated)
-- Audience inputs are always batched - never process individually
-- Performers can always override any parameter (core design principle)
-- Redis required for session state in core-engine
-
-## Performance Targets
-
-- WebSocket latency: P95 < 2ms
-- Consensus computation: < 1ms for 100 concurrent users
-- Memory: < 500MB per service at 1000 connections
+1. record the exact head;
+2. run every available deterministic command;
+3. preserve exact outputs rather than paraphrasing them;
+4. state what could not execute and why;
+5. update the evidence register when a claim changes state;
+6. leave the PR draft when an execution or evidence gate remains open.
 
 <!-- ORGANVM:AUTO:START -->
 ## System Context (auto-generated — do not edit)
@@ -332,7 +267,6 @@ Resolve: `organvm ontologia resolve metasystem-master` | History: `organvm ontol
 | `sprints_completed` | 33 | global | 2026-04-14 |
 | `test_files` | 0 | global | 2026-04-14 |
 | `total_organs` | 10 | global | 2026-04-14 |
-| `total_repos` | 145 | global | 2026-04-14 |
 | `total_words_formatted` | 0 | global | 2026-04-14 |
 | `total_words_numeric` | 0 | global | 2026-04-14 |
 | `total_words_short` | 0K+ | global | 2026-04-14 |
@@ -378,19 +312,11 @@ Nature demands a documentation counterpart. This formation maintains its narrati
 
 <!-- ORGANVM:AUTO:END -->
 
+## Conductor OS integration
 
-
-
-
-
-
-
-
-
-
-## ⚡ Conductor OS Integration
 This repository is a managed component of the ORGANVM meta-workspace.
-- **Orchestration:** Use `conductor patch` for system status and work queue.
-- **Lifecycle:** Follow the `FRAME -> SHAPE -> BUILD -> PROVE` workflow.
-- **Governance:** Promotions are managed via `conductor wip promote`.
-- **Intelligence:** Conductor MCP tools are available for routing and mission synthesis.
+
+- **Orchestration:** use `conductor patch` for system status and work queue.
+- **Lifecycle:** follow `FRAME -> SHAPE -> BUILD -> PROVE`.
+- **Governance:** promotions are managed through `conductor wip promote`.
+- **Intelligence:** Conductor MCP tools may be available for routing and mission synthesis.

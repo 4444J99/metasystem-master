@@ -1,0 +1,211 @@
+{
+  "file": "raw-results.tar.xz",
+  "source_revision": "6f1270d793217783889b5f22779f34ad93228247",
+  "files": 40,
+  "archive_members": [
+    "before-repairs/baseline-canonical-typecheck.log",
+    "before-repairs/baseline-claim-gate.log",
+    "before-repairs/candidate-typecheck.log",
+    "before-repairs/expiry-before.log",
+    "before-repairs/osc-before.log",
+    "before-repairs/tsx-cli-ipc-failure.log",
+    "exact-commit/benchmark-1.json",
+    "exact-commit/benchmark-1.log",
+    "exact-commit/benchmark-2.json",
+    "exact-commit/benchmark-2.log",
+    "exact-commit/benchmark-3.json",
+    "exact-commit/benchmark-3.log",
+    "exact-commit/benchmark-4.json",
+    "exact-commit/benchmark-4.log",
+    "exact-commit/benchmark-5.json",
+    "exact-commit/benchmark-5.log",
+    "exact-commit/execution-receipt.json",
+    "exact-commit/full-dependency-aggregation.json",
+    "exact-commit/full-dependency-aggregation.log",
+    "exact-commit/full-dependency-osc.json",
+    "exact-commit/full-dependency-osc.log",
+    "exact-commit/full-dependency-probes.json",
+    "exact-commit/full-dependency-probes.log",
+    "exact-commit/node20-acquisition.log",
+    "exact-commit/node20-pinned-acquisition.log",
+    "exact-commit/node20/benchmark.json",
+    "exact-commit/node20/benchmark.log",
+    "exact-commit/node20/claim-gate.log",
+    "exact-commit/node20/claim-regressions.log",
+    "exact-commit/node20/execution-receipt.json",
+    "exact-commit/node20/full-tests.log",
+    "exact-commit/node20/structure-gate.log",
+    "exact-commit/node20/typecheck.log",
+    "exact-commit/osc-execution-receipt.json",
+    "prior-candidate/final-original-workspace-claim-gate.log",
+    "prior-candidate/final-original-workspace-claim-regressions.log",
+    "prior-candidate/final-original-workspace-frozen-install.log",
+    "prior-candidate/final-original-workspace-full-tests.log",
+    "prior-candidate/final-original-workspace-structure-gate.log",
+    "prior-candidate/final-original-workspace-typecheck.log"
+  ],
+  "member_hashes": {
+    "before-repairs/baseline-canonical-typecheck.log": {
+      "bytes": 761,
+      "sha256": "75a39182d8e6713e51333fa4e8fb4268f14775865bdc16d0d0a2f99866de22ba"
+    },
+    "before-repairs/baseline-claim-gate.log": {
+      "bytes": 343,
+      "sha256": "4973553fe9842ec00368f57591621b857337526a960afe020388f77faaaccb60"
+    },
+    "before-repairs/candidate-typecheck.log": {
+      "bytes": 302,
+      "sha256": "c1d9703a641d05b89dbbba47631d9a4adaf6a47780f4fc3d38e0bd00ec4a9aed"
+    },
+    "before-repairs/expiry-before.log": {
+      "bytes": 3174,
+      "sha256": "c35cc172bfe8ebc9950a4019b018e1a852c734cff129aa3ca32d93208a59fdd1"
+    },
+    "before-repairs/osc-before.log": {
+      "bytes": 1759,
+      "sha256": "17500bbeda01d1b0eeb54629e45cbcab7118d1fe9094e287c50b469aa85812f1"
+    },
+    "before-repairs/tsx-cli-ipc-failure.log": {
+      "bytes": 1487,
+      "sha256": "aedafd4c470db91ad379c24596c152309bd9715d5e56dafe8fa06c7f58f34614"
+    },
+    "exact-commit/benchmark-1.json": {
+      "bytes": 2403,
+      "sha256": "24a9de6bebe437cdf40f74cfffb3e398c4cdd9ae35feb8fb95f51a5914a18e62"
+    },
+    "exact-commit/benchmark-1.log": {
+      "bytes": 2525,
+      "sha256": "81502143a9cce455cb61493e60e824c68ec3b01350aca29f0f6af185483e8595"
+    },
+    "exact-commit/benchmark-2.json": {
+      "bytes": 2400,
+      "sha256": "824054c14303f56b91d5a61bd1bc4a62034a38b0a8e0dbfeac63470b28985e28"
+    },
+    "exact-commit/benchmark-2.log": {
+      "bytes": 2510,
+      "sha256": "575fb836ffd5a8c7ea397fc2bed7899301849349669ac7f6973092286b0241c9"
+    },
+    "exact-commit/benchmark-3.json": {
+      "bytes": 2404,
+      "sha256": "2569d1a52ce72c042f39bea831ed79d7acf4b7d6b17d43a76e4d36e42cb47d6f"
+    },
+    "exact-commit/benchmark-3.log": {
+      "bytes": 2525,
+      "sha256": "6e717ca082504aff77cce9c23e3d766f9c95a29965e5960e18825eabf1faa004"
+    },
+    "exact-commit/benchmark-4.json": {
+      "bytes": 2396,
+      "sha256": "249353b184aea44530ca0e54cf889017ce1a87cc1e0eb392cf88afa9a2cad384"
+    },
+    "exact-commit/benchmark-4.log": {
+      "bytes": 2495,
+      "sha256": "1699792d244bca796cc9f8a3ab19e150110aa7aa3e7cb2854819c70ebe540302"
+    },
+    "exact-commit/benchmark-5.json": {
+      "bytes": 2400,
+      "sha256": "fab3b57bdb7da64e860e8f49c013afa454e5bdd273e8a279354934d360f7eee4"
+    },
+    "exact-commit/benchmark-5.log": {
+      "bytes": 2510,
+      "sha256": "04c328908ec07828010b9ea230f6d4e9ce5ac86243085206322e8b26606ac111"
+    },
+    "exact-commit/execution-receipt.json": {
+      "bytes": 4257,
+      "sha256": "9520e93ae1300092f419c0d4529c993b5385076a57779671115d745d95c3b4f5"
+    },
+    "exact-commit/full-dependency-aggregation.json": {
+      "bytes": 1179,
+      "sha256": "392d9413e227d90991021bf60125455432da4ef9b05ae564a3fcd0ce2e6b7b6a"
+    },
+    "exact-commit/full-dependency-aggregation.log": {
+      "bytes": 1179,
+      "sha256": "392d9413e227d90991021bf60125455432da4ef9b05ae564a3fcd0ce2e6b7b6a"
+    },
+    "exact-commit/full-dependency-osc.json": {
+      "bytes": 2897,
+      "sha256": "1907102588be7475b9b90dc64c29e7372e11d9d0dcb9a24dc4f372f3ca4839c4"
+    },
+    "exact-commit/full-dependency-osc.log": {
+      "bytes": 3401,
+      "sha256": "4da2dd586b5fba6d4b4611939f5e734212b8dbdfdf6a02de1b5f1fb1c2fe436f"
+    },
+    "exact-commit/full-dependency-probes.json": {
+      "bytes": 1228849,
+      "sha256": "6a40745a9e873cdc609949a928ac8844e59e595f54e8876211ff4c30ae5b46bd"
+    },
+    "exact-commit/full-dependency-probes.log": {
+      "bytes": 3358,
+      "sha256": "eb33d003d95ce9663d4aa267f5c230abe940299460faa49531d5cc018f869f09"
+    },
+    "exact-commit/node20-acquisition.log": {
+      "bytes": 94,
+      "sha256": "6e035cfe6dfeb853507bdac35dff8f3f7faef576f995e6489b74c84fb10fb3be"
+    },
+    "exact-commit/node20-pinned-acquisition.log": {
+      "bytes": 1817,
+      "sha256": "b817fe880156a353c358091d53580ce5d31d80fe414c9752855aa64545702d55"
+    },
+    "exact-commit/node20/benchmark.json": {
+      "bytes": 2406,
+      "sha256": "649f34bb2eea85c8faf2aa7c953ecdf1dcd56d87af04265607abff6e695617c1"
+    },
+    "exact-commit/node20/benchmark.log": {
+      "bytes": 2565,
+      "sha256": "544b3bea8b7e4f45a334243553899fc64a0b5347a59530e54a2cc2c5e287419c"
+    },
+    "exact-commit/node20/claim-gate.log": {
+      "bytes": 170,
+      "sha256": "6f8bc044e805703a5cdc85fc7b8ae9e9c0ceb4544274461b6ab1d538cd8424ea"
+    },
+    "exact-commit/node20/claim-regressions.log": {
+      "bytes": 3457,
+      "sha256": "b3c5faa5b8157bb157f28e8af6a6ff539dbcb1deac441ee53f99a0c388404b77"
+    },
+    "exact-commit/node20/execution-receipt.json": {
+      "bytes": 2489,
+      "sha256": "752b0a6530f1696b9f4f82249877d62c84500f45212e022f6c06d941da1b7242"
+    },
+    "exact-commit/node20/full-tests.log": {
+      "bytes": 8352,
+      "sha256": "3675daa5313eb44d4958a85dbc4adde3008ccb7b7e1c53a13912592dc277574f"
+    },
+    "exact-commit/node20/structure-gate.log": {
+      "bytes": 201,
+      "sha256": "474688ca378e71f52f827a4a50a3b600271d3a171b17510430a5329a2ce82c07"
+    },
+    "exact-commit/node20/typecheck.log": {
+      "bytes": 150,
+      "sha256": "6eba1fde94ede80c4ab409ca7604f3e7491076e16476e404a1fff78d877b4943"
+    },
+    "exact-commit/osc-execution-receipt.json": {
+      "bytes": 488,
+      "sha256": "b462229bf205820b6b7a733acbc4812564bf302095202363b8187b3021c22d16"
+    },
+    "prior-candidate/final-original-workspace-claim-gate.log": {
+      "bytes": 170,
+      "sha256": "6f8bc044e805703a5cdc85fc7b8ae9e9c0ceb4544274461b6ab1d538cd8424ea"
+    },
+    "prior-candidate/final-original-workspace-claim-regressions.log": {
+      "bytes": 1513,
+      "sha256": "aa70902d147ef102417e74ad1e8d1257ea1a5b76238e2a43478ac453eef118f8"
+    },
+    "prior-candidate/final-original-workspace-frozen-install.log": {
+      "bytes": 414,
+      "sha256": "fafc59ee514223b622ea49b9494787d456428c84990ffa2d26572c6b25850ba5"
+    },
+    "prior-candidate/final-original-workspace-full-tests.log": {
+      "bytes": 8351,
+      "sha256": "dccc5f3c58c63244020014fc4f5ab3ea30dc653e29cab9e5445b1b63df5981a7"
+    },
+    "prior-candidate/final-original-workspace-structure-gate.log": {
+      "bytes": 201,
+      "sha256": "474688ca378e71f52f827a4a50a3b600271d3a171b17510430a5329a2ce82c07"
+    },
+    "prior-candidate/final-original-workspace-typecheck.log": {
+      "bytes": 150,
+      "sha256": "6eba1fde94ede80c4ab409ca7604f3e7491076e16476e404a1fff78d877b4943"
+    }
+  },
+  "bytes": 21456,
+  "sha256": "7c4d861b334b86dcc50b10216a4c8468f3fea189a91cb44e861f1e4ccf0a950a"
+}
