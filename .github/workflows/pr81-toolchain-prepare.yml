@@ -1,0 +1,181 @@
+name: PR81 Toolchain Preparation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/pr81-toolchain-prepare.yml
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    if: github.event.pull_request.number == 81 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+      - name: Resolve exact lint tooling without running dependency scripts
+        run: pnpm add -Dw --save-exact --ignore-scripts --lockfile-only eslint@9.39.5 @typescript-eslint/parser@8.70.1 'typescript@npm:@typescript/typescript6@^6.0.2'
+      - name: Install the side-by-side tooling without lifecycle scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts --reporter=silent
+      - name: Run real lint and compiler-isolation regression tests
+        run: |
+          pnpm run lint
+          pnpm run test:lint
+      - name: Prepare metadata and inspectable files
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, pathlib, shutil, subprocess
+          root = pathlib.Path('.')
+          def update_docs(root):
+              p=root/'README.md'; s=p.read_text()
+              old='**Repository status:** active proof-of-concept under reproducibility and claim repair. Source code, tests, examples, infrastructure files, and extensive design documentation are present. A successful strict core-engine workflow, preserved benchmark artifact, current deployment record, rehearsal record, and live-performance validation have **not** yet been established for the current repair branch.'
+              new='**Repository status:** active proof-of-concept with recovered native core-engine verification. The integration line has produced strict compiler/test logs and a preserved benchmark artifact. Exact-head monorepo validation and accepted-main closeout are tracked in [issue #82](https://github.com/4444J99/metasystem-master/issues/82). Current deployment, rehearsal, and live-performance validation remain separate, unestablished gates.'
+              assert old in s;s=s.replace(old,new)
+              s=s.replace('| Has the strict core workflow produced complete compiler/test logs at the current branch head? | Not yet; GitHub Actions terminates before runner steps are recorded. |', '| Has the strict core workflow produced complete compiler/test logs for the integration line? | Yes: [native run 36084110788](https://github.com/4444J99/metasystem-master/actions/runs/36084110788), candidate `9c7ac7042d762a72b2bec440e50cd8585edf8782`. Later-head acceptance is recorded separately in #82. |')
+              s=s.replace('| Is there a preserved benchmark JSON artifact for the current branch? | Not yet. |', '| Is there preserved benchmark JSON evidence for the integration line? | Yes: artifact `10843446354`, recording executed merge SHA `b3843de97e6a97a8f8bf749010db3a4955d02658`. Candidate and executed-merge trees both equal `5d0f67b6aba3ea330a0cf447cafe28ccf691db35`. |')
+              p.write_text(s)
+              p=root/'packages/core-engine/README.md';s=p.read_text()
+              old='**Current state:** proof-of-concept code under reproducibility repair. The repository now defines strict typecheck, deterministic functional tests, and a seeded in-process benchmark, but no successful GitHub Actions runner execution or benchmark artifact has yet been recovered for this branch.'
+              new='**Current state:** proof-of-concept code with native reproducibility evidence. [Run 36084110788](https://github.com/4444J99/metasystem-master/actions/runs/36084110788) executed the runtime, claim and structure guards, frozen installation, strict typecheck, all discovered core tests, benchmark, and artifact upload. Its candidate is `9c7ac7042d762a72b2bec440e50cd8585edf8782`; the executed merge is `b3843de97e6a97a8f8bf749010db3a4955d02658`, with the same tree. Later-head and accepted-main verification are tracked separately in [#82](https://github.com/4444J99/metasystem-master/issues/82).'
+              assert old in s;s=s.replace(old,new)
+              s=s.replace('**Next gate:** obtain a complete strict workflow run, preserve exact compiler/test output and the JSON benchmark artifact, then repeat the benchmark in declared environments. No latency threshold is asserted by the baseline.', '**Next evidence gate:** retain strict verification at each accepted head, then collect repeated measurements and separately instrument end-to-end behavior before broad performance claims. No latency threshold is asserted by the baseline.')
+              p.write_text(s)
+              p=root/'docs/reproducibility/core-engine-evidence-status.md';s=p.read_text()
+              header='''## Native execution checkpoint — September 24, 2026 (ET)
+
+          The old organization runner-admission failure is no longer the repository's
+          current execution state after transfer to `4444J99/metasystem-master`.
+          [Core Engine Evidence run 36084110788](https://github.com/4444J99/metasystem-master/actions/runs/36084110788),
+          job `107912087672`, completed every guard, frozen install, core typecheck,
+          discovered core test, in-process benchmark and artifact-upload step successfully.
+          Its candidate is `9c7ac7042d762a72b2bec440e50cd8585edf8782`; the executed PR merge
+          is `b3843de97e6a97a8f8bf749010db3a4955d02658`. Both have tree
+          `5d0f67b6aba3ea330a0cf447cafe28ccf691db35`.
+
+          Benchmark artifact `10843446354` has archive SHA-256
+          `1930579213d24e887e0764c8e16f470df82146f43a091f0a8c31748244bac295`.
+          These are native execution observations, not relabeled September 3 or September 9
+          local results. [Issue #82](https://github.com/4444J99/metasystem-master/issues/82)
+          records subsequent exact-head and accepted-main outcomes; this checkpoint alone
+          does not certify a later commit.
+
+          No production, deployment, transport, audience-device, rehearsal or artistic
+          outcome follows from these tests or the bounded compute benchmark. Stable timing
+          claims still require the declared repeated-environment protocol.
+
+          ## Historical register — September 3, 2026
+
+          The dated material below is retained as the original audit record. Its
+          "unexecuted" and runner-blocked classifications describe that recorded source
+          and date, not the later native checkpoint above. Historical artifacts and known
+          mathematical limits remain preserved.
+
+          '''
+              s=s.replace('# Core-Engine Evidence Status and Claim Register\n\n','# Core-Engine Evidence Status and Claim Register\n\n'+header,1)
+              s=s.replace('## Current status\n','## Status at the September 3 checkpoint\n',1)
+              s=s.replace('## Current admissible claims\n','## Admissible claims at the September 3 checkpoint\n',1)
+              p.write_text(s)
+          update_docs(root)
+          output = pathlib.Path('/tmp/prepared')
+          output.mkdir()
+          paths = ['package.json', 'pnpm-lock.yaml',
+            'packages/performance-sdk/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/client/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/server/package-lock.json',
+            'README.md', 'packages/core-engine/README.md', 'docs/reproducibility/core-engine-evidence-status.md']
+          for path in paths[2:5]:
+              target = root / path
+              lock = json.loads(target.read_text())
+              manifest = json.loads(target.with_name('package.json').read_text())
+              lock['packages']['']['engines'] = manifest['engines']
+              target.write_text(json.dumps(lock, indent=2) + '\n')
+          metadata = {'head_sha': os.environ['EXPECTED_HEAD'],
+            'checkout_sha': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(), 'files': []}
+          for index, path in enumerate(paths):
+              source = root / path
+              name = f'file-{index}.txt'
+              shutil.copyfile(source, output / name)
+              metadata['files'].append({'path': path, 'file': name,
+                'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
+          (output / 'metadata.json').write_text(json.dumps(metadata, indent=2) + '\n')
+          (output / 'changes.patch').write_bytes(subprocess.check_output(['git','diff','--',*paths]))
+          subprocess.run(['git','diff','--check'],check=True)
+          subprocess.run(['node','tools/check-core-claim-boundaries.mjs'],check=True)
+          print(json.dumps(metadata, indent=2))
+          print((root / 'package.json').read_text())
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr81-prepared-tooling-${{ github.event.pull_request.head.sha }}
+          path: /tmp/prepared/
+          if-no-files-found: error
+          retention-days: 7
+
+  stage-immutable-blobs:
+    # Fresh runner: no checkout, dependency install, or execution of downloaded data.
+    # This stages immutable blobs only. No branch, status, policy, or merge writes.
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: pr81-prepared-tooling-${{ github.event.pull_request.head.sha }}
+          path: prepared
+      - name: Validate fixed data and stage blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import base64, hashlib, json, os, pathlib, urllib.request
+          root = pathlib.Path('prepared')
+          allowed = ['package.json', 'pnpm-lock.yaml',
+            'packages/performance-sdk/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/client/package-lock.json',
+            'docs/reference/poc-v0.1.0-parent/poc-v0.1.0/server/package-lock.json',
+            'README.md', 'packages/core-engine/README.md', 'docs/reproducibility/core-engine-evidence-status.md']
+          metadata = json.loads((root/'metadata.json').read_text())
+          assert metadata['head_sha'] == os.environ['EXPECTED_HEAD']
+          assert [entry['path'] for entry in metadata['files']] == allowed
+          records = []
+          for index, entry in enumerate(metadata['files']):
+              assert entry['file'] == f'file-{index}.txt'
+              path = root / entry['file']
+              assert path.is_file() and not path.is_symlink() and path.stat().st_size < 4000000
+              data = path.read_bytes()
+              data.decode('utf-8')
+              assert hashlib.sha256(data).hexdigest() == entry['sha256']
+              body = json.dumps({'content': base64.b64encode(data).decode(), 'encoding': 'base64'}).encode()
+              request = urllib.request.Request(
+                'https://api.github.com/repos/4444J99/metasystem-master/git/blobs', data=body,
+                headers={'Authorization': 'Bearer '+os.environ['GH_TOKEN'],
+                         'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'}, method='POST')
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  result = json.load(response)
+              expected = hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
+              assert result['sha'] == expected
+              records.append({'path': entry['path'], 'sha': expected, 'sha256': entry['sha256']})
+          receipt = {'head_sha': metadata['head_sha'], 'files': records, 'refs_updated': False}
+          pathlib.Path('blob-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          print(json.dumps(receipt, indent=2))
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr81-tooling-blob-receipt-${{ github.event.pull_request.head.sha }}
+          path: blob-receipt.json
+          if-no-files-found: error
+          retention-days: 7

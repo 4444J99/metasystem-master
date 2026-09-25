@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
 import test from 'node:test';
 import { ESLint } from 'eslint';
 
@@ -33,4 +35,16 @@ test('lint rejects duplicate object keys', async () => {
     filePath: 'packages/performance-sdk/src/probe.ts',
   });
   assert.ok(result.messages.some(({ ruleId }) => ruleId === 'no-dupe-keys'));
+});
+
+// TypeScript 7 provides the package compilers; only ESLint needs the TS6 API.
+test('lint API is isolated from the TypeScript 7 application compilers', () => {
+  const rootRequire = createRequire(join(cwd, 'package.json'));
+  const lintApi = rootRequire('typescript');
+  assert.match(lintApi.version, /^6\./);
+  assert.equal(typeof lintApi.createSourceFile, 'function');
+  for (const path of ['packages/core-engine', 'packages/audio-synthesis-bridge', 'packages/performance-sdk']) {
+    const packageRequire = createRequire(join(cwd, path, 'package.json'));
+    assert.match(packageRequire('typescript/package.json').version, /^7\./);
+  }
 });
