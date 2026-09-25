@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "cors": "^2.8.6",
@@ -28,7 +29,7 @@
     "vitest": "^5.0.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
   },
   "keywords": [
     "real-time",

@@ -6,50 +6,61 @@ on:
   pull_request:
     branches: ["master", "main"]
 
+permissions:
+  contents: read
+
 jobs:
   lint-typescript:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v4
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: "20"
+          node-version-file: .nvmrc
           cache: "pnpm"
+      - run: node tools/ci/check-runtime.mjs
       - run: pnpm install --frozen-lockfile
       - name: Typecheck
-        continue-on-error: true
         run: pnpm run typecheck
 
   test-core-engine:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v4
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
-          node-version: "20"
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
           cache: "pnpm"
+      - run: node tools/ci/check-runtime.mjs
       - run: pnpm install --frozen-lockfile
       - name: Test core-engine
-        continue-on-error: true
-        run: pnpm --filter @omni-dromenon/core-engine test
+        run: pnpm --filter @omni-dromenon/core-engine exec vitest run
 
   validate-python:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: "3.10"
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f "packages/orchestrate/requirements.txt" ]; then
-            pip install -r packages/orchestrate/requirements.txt || true
+            pip install -r packages/orchestrate/requirements.txt
           fi
       - name: Lint Scripts
-        continue-on-error: true
         run: |
           if [ -d "tools/scripts" ]; then
             python -m compileall tools/scripts/
@@ -57,3 +68,94 @@ jobs:
           if [ -d "packages/orchestrate/src" ]; then
             python -m compileall packages/orchestrate/src/
           fi
+
+  runtime-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+      - run: node tools/ci/check-runtime.mjs
+      - run: node --test tools/ci/test-runtime-contract.mjs
+
+  build-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: node tools/ci/check-runtime.mjs
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+
+  test-other-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [audio-synthesis-bridge, performance-sdk]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: node tools/ci/check-runtime.mjs
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @omni-dromenon/${{ matrix.package }} exec vitest run
+
+  reference-apps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [client, server]
+    defaults:
+      run:
+        working-directory: docs/reference/poc-v0.1.0-parent/poc-v0.1.0/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: docs/reference/poc-v0.1.0-parent/poc-v0.1.0/${{ matrix.app }}/package-lock.json
+      - run: node tools/ci/check-runtime.mjs
+        working-directory: .
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+
+  lint-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: node tools/ci/check-runtime.mjs
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run test:lint

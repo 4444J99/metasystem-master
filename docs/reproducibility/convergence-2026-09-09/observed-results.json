@@ -1,0 +1,76 @@
+{
+  "source_revision": "6f1270d793217783889b5f22779f34ad93228247",
+  "execution_class": "full_locked_dependency_committed_source_local",
+  "runtime": {
+    "node": "v24.19.0",
+    "typescript": "6.0.3",
+    "pnpm": "9.15.0",
+    "platform": "linux",
+    "architecture": "x64"
+  },
+  "benchmarks": {
+    "fresh_processes": 5,
+    "measured_calls": 1250,
+    "warmup_calls": 250,
+    "source_tags_all_match": true,
+    "same_process_guard": "existing benchmark equality assertion",
+    "rounded_output_values": [
+      0.415918,
+      0.513668,
+      0.519202,
+      0.502603,
+      0.498961
+    ],
+    "rounded_values_equal_to_historical": true,
+    "threshold": null
+  },
+  "probes": {
+    "minority_fixtures": 500,
+    "unchanged_fields_equal_to_historical": [
+      "minority",
+      "temporal",
+      "overrideModes",
+      "invalid",
+      "evenMedian",
+      "majorityTies"
+    ],
+    "epoch_zero_active_before": true,
+    "epoch_zero_active_after": false,
+    "aggregator_assertions": 19,
+    "historical_aggregator_assertions": 17,
+    "added_aggregator_assertions": "epoch-zero clears map and public state",
+    "historical_nonzero_aggregator_observations_unchanged": true,
+    "osc_codec_event_cases": 8,
+    "osc_socket_opening": "stubbed"
+  },
+  "prior_candidate_gate_validation": {
+    "source_identity_equivalence_verified": true,
+    "source_files_checked": 75,
+    "changed_files_explicitly_reread": 11,
+    "claim_regressions": 26,
+    "claim_gate": "pass",
+    "structure_gate": "pass",
+    "frozen_install": "pass",
+    "full_typecheck": "pass",
+    "core_discovered_tests": 65,
+    "core_test_files": 6,
+    "classification": "earlier successful runs on byte-identical candidate, not retagged as new postcommit runs"
+  },
+  "github_actions_gate": "infrastructure_execution_blocked",
+  "checked_at": "2026-09-09T20:50:58.526353+00:00",
+  "node20_compatibility": {
+    "node": "v20.20.2",
+    "source_revision": "6f1270d793217783889b5f22779f34ad93228247",
+    "claim_regressions": 26,
+    "claim_gate": "pass",
+    "structure_gate": "pass",
+    "typecheck": "pass",
+    "core_tests": 65,
+    "benchmark_processes": 1,
+    "benchmark_measured_calls": 250,
+    "benchmark_warmup_calls": 50,
+    "rounded_outputs_match": true,
+    "dependency_tree": "reused frozen Node24-installed tree",
+    "github_actions": false
+  }
+}

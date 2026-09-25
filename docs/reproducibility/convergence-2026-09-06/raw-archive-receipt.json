@@ -1,0 +1,161 @@
+{
+  "file": "raw-results.tar.xz",
+  "files": 30,
+  "bytes": 16036,
+  "sha256": "26ec6719898fdf4d834bcbf159f0b77fb9f5b6435e6bcc864ef0dd5e1a944593",
+  "git_blob_sha": "2d3d111eb7be89a4a6fc012820ab838f55507e50",
+  "archive_members": [
+    "results/aggregation-experiments.json",
+    "results/aggregation-experiments.log",
+    "results/analytic-crosscheck.json",
+    "results/benchmark-1.json",
+    "results/benchmark-1.log",
+    "results/benchmark-2.json",
+    "results/benchmark-2.log",
+    "results/benchmark-3.json",
+    "results/benchmark-3.log",
+    "results/benchmark-4.json",
+    "results/benchmark-4.log",
+    "results/benchmark-5.json",
+    "results/benchmark-5.log",
+    "results/benchmark-replication.json",
+    "results/compact-results.json",
+    "results/environment.json",
+    "results/experiments.json",
+    "results/experiments.log",
+    "results/final-adapter-aggregation-experiments.cjs.log",
+    "results/final-adapter-experiments.cjs.log",
+    "results/final-adapter-verification.json",
+    "results/harness-attempt-1/aggregation-experiments-float-assertion.log",
+    "results/harness-attempt-1/benchmark-1.log",
+    "results/harness-attempt-1/benchmark-2.log",
+    "results/harness-attempt-1/benchmark-3.log",
+    "results/harness-attempt-1/experiments.log",
+    "results/metadata-omission-attempt/benchmark-4.json",
+    "results/metadata-omission-attempt/benchmark-4.log",
+    "results/metadata-omission-attempt/benchmark-5.json",
+    "results/metadata-omission-attempt/benchmark-5.log"
+  ],
+  "member_hashes": {
+    "results/aggregation-experiments.json": {
+      "bytes": 1343,
+      "sha256": "c4c2e4c277d27674a38bc31311a72ca06cdebbf44c68fd30a1030de8a79e1f4c"
+    },
+    "results/aggregation-experiments.log": {
+      "bytes": 1343,
+      "sha256": "c4c2e4c277d27674a38bc31311a72ca06cdebbf44c68fd30a1030de8a79e1f4c"
+    },
+    "results/analytic-crosscheck.json": {
+      "bytes": 1822,
+      "sha256": "a95540cbab2ede1af6e7da7d84041eebb832c8d2477eab1d720d14c984a04322"
+    },
+    "results/benchmark-1.json": {
+      "bytes": 2403,
+      "sha256": "adb94d2625d3da9cf3aad8b91f631adddd6d3cbfa1e97ec5ee7f7416c9741906"
+    },
+    "results/benchmark-1.log": {
+      "bytes": 2250,
+      "sha256": "c63a9adf8e0ec88b63bda47e878cbd4fd666a21d474cad66491ec4fe516591bd"
+    },
+    "results/benchmark-2.json": {
+      "bytes": 2404,
+      "sha256": "637959ebbbb29e6f343501159175ede0028c06b31837c084e724e069f5e9e8eb"
+    },
+    "results/benchmark-2.log": {
+      "bytes": 2250,
+      "sha256": "9c11ca52b3af162e53160e7ec4e93121f6bcc8fce67943ee5be19ed5cd390305"
+    },
+    "results/benchmark-3.json": {
+      "bytes": 2403,
+      "sha256": "48a859c965f89e16ee0c2263d5ddca73f4307d97b6a4b5a4c7dfc26abfad08a0"
+    },
+    "results/benchmark-3.log": {
+      "bytes": 2250,
+      "sha256": "85dd1d1664ca14d51cfe1fa085c87c2ab68b29180d889f7c43a2021643fd1f0b"
+    },
+    "results/benchmark-4.json": {
+      "bytes": 2405,
+      "sha256": "6c057d88486dddb246d0393cc93e6485c7575d54103ec7dead055c6b61600e9d"
+    },
+    "results/benchmark-4.log": {
+      "bytes": 2250,
+      "sha256": "369a0dd922a26ee653f8f46e9b2995175c1f8e6050afafe4b0ad59d9f696f3d9"
+    },
+    "results/benchmark-5.json": {
+      "bytes": 2402,
+      "sha256": "396e11bc40de4f7e1697e67e755765322957980476254d2bc3d7ab75549e83a6"
+    },
+    "results/benchmark-5.log": {
+      "bytes": 2235,
+      "sha256": "750001f5682cccd15855a551b4ed29638cf76e631ef8144e40dba75aa32f2986"
+    },
+    "results/benchmark-replication.json": {
+      "bytes": 14181,
+      "sha256": "56b40eec3fe5e3aeb39368d59573e91a9fecd7929b76eda9b8ee2e6e51565c68"
+    },
+    "results/compact-results.json": {
+      "bytes": 6633,
+      "sha256": "db7bcfe2ca401394eaecb856235bff729a0ea12846f6b822c0e0ef6c9c6eb3e5"
+    },
+    "results/environment.json": {
+      "bytes": 698,
+      "sha256": "48aa25b052788173084328579a62578c28af360ddae3b8bdfc07f972e3817d22"
+    },
+    "results/experiments.json": {
+      "bytes": 1228906,
+      "sha256": "e07b70e3357c8169dd5ff6eafe619655972bc70e925e9502157a7eb862b7bc24"
+    },
+    "results/experiments.log": {
+      "bytes": 4573,
+      "sha256": "10bf43faa2bbf8cccd6d6db8bd4e62ce10e00ab52bc42b0495188ea36c89e8bb"
+    },
+    "results/final-adapter-aggregation-experiments.cjs.log": {
+      "bytes": 1343,
+      "sha256": "17c022a1a658821de20c4842ddd338101a33e0eb2635effebe094dc97fdcec7e"
+    },
+    "results/final-adapter-experiments.cjs.log": {
+      "bytes": 4573,
+      "sha256": "10bf43faa2bbf8cccd6d6db8bd4e62ce10e00ab52bc42b0495188ea36c89e8bb"
+    },
+    "results/final-adapter-verification.json": {
+      "bytes": 291,
+      "sha256": "367e883027603e09aa17c6d78556ffee423e5a1032d1275e52b450c56d05850c"
+    },
+    "results/harness-attempt-1/aggregation-experiments-float-assertion.log": {
+      "bytes": 1063,
+      "sha256": "7de050ece09ea960471fcdea6dae23dc12b2a32c346c08a49b251edb30acaaed"
+    },
+    "results/harness-attempt-1/benchmark-1.log": {
+      "bytes": 1478,
+      "sha256": "28b37a35f32a86946bc6ff92747143d85befb08c7b59e3fb08c03f75f2a86343"
+    },
+    "results/harness-attempt-1/benchmark-2.log": {
+      "bytes": 1478,
+      "sha256": "28b37a35f32a86946bc6ff92747143d85befb08c7b59e3fb08c03f75f2a86343"
+    },
+    "results/harness-attempt-1/benchmark-3.log": {
+      "bytes": 1478,
+      "sha256": "28b37a35f32a86946bc6ff92747143d85befb08c7b59e3fb08c03f75f2a86343"
+    },
+    "results/harness-attempt-1/experiments.log": {
+      "bytes": 1453,
+      "sha256": "ec2642b510a346f11d850e2199775dad965a47062bea4e9f5b4bc66b358f2861"
+    },
+    "results/metadata-omission-attempt/benchmark-4.json": {
+      "bytes": 2363,
+      "sha256": "74d6fc5429c5734104c4e0b7d1a23f581034eb7850740643bd06a7ed29df667d"
+    },
+    "results/metadata-omission-attempt/benchmark-4.log": {
+      "bytes": 2250,
+      "sha256": "13bc2397510beba03054f7a8174c371ef8dbfb8df5ddf721b6b88a1f72553522"
+    },
+    "results/metadata-omission-attempt/benchmark-5.json": {
+      "bytes": 2362,
+      "sha256": "38fc0b0d76d2715e7dcee92ab87cfc11df6480cb00ccc909551c57125657779d"
+    },
+    "results/metadata-omission-attempt/benchmark-5.log": {
+      "bytes": 2250,
+      "sha256": "38cf0722250be08813d196190c82e7bc2727a7f9ba2c047501f289ac9bf9b2e0"
+    }
+  }
+}
