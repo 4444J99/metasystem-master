@@ -1,12 +1,41 @@
 # Core-Engine Evidence Status and Claim Register
 
+## Native execution checkpoint — September 24, 2026 (ET)
+
+The old organization runner-admission failure is no longer the repository's
+current execution state after transfer to `4444J99/metasystem-master`.
+[Core Engine Evidence run 36084110788](https://github.com/4444J99/metasystem-master/actions/runs/36084110788),
+job `107912087672`, completed every guard, frozen install, core typecheck,
+discovered core test, in-process benchmark and artifact-upload step successfully.
+Its candidate is `9c7ac7042d762a72b2bec440e50cd8585edf8782`; the executed PR merge
+is `b3843de97e6a97a8f8bf749010db3a4955d02658`. Both have tree
+`5d0f67b6aba3ea330a0cf447cafe28ccf691db35`.
+
+Benchmark artifact `10843446354` has archive SHA-256
+`1930579213d24e887e0764c8e16f470df82146f43a091f0a8c31748244bac295`.
+These are native execution observations, not relabeled September 3 or September 9
+local results. [Issue #82](https://github.com/4444J99/metasystem-master/issues/82)
+records subsequent exact-head and accepted-main outcomes; this checkpoint alone
+does not certify a later commit.
+
+No production, deployment, transport, audience-device, rehearsal or artistic
+outcome follows from these tests or the bounded compute benchmark. Stable timing
+claims still require the declared repeated-environment protocol.
+
+## Historical register — September 3, 2026
+
+The dated material below is retained as the original audit record. Its
+"unexecuted" and runner-blocked classifications describe that recorded source
+and date, not the later native checkpoint above. Historical artifacts and known
+mathematical limits remain preserved.
+
 **Audit date:** 2026-09-03  
 **Audited source baseline:** `7b5fbac49b50993878f6842e4e7648491a8a662c`  
 **Repair branch:** `phd/omni-reproducibility-baseline-2026-09-03`  
 **Source head assessed immediately before this register update:** `18f24bec1f7aa6c2b857767764612a62bb9bcb91`  
 **Interpretation:** this register distinguishes inspectable implementation, static structure, deterministic checks, compiler results, measured artifacts, deployment observations, rehearsal observations, and live-performance evidence.
 
-## Current status
+## Status at the September 3 checkpoint
 
 The branch now contains an inspectable, claim-bounded core evidence lane with:
 
@@ -62,7 +91,7 @@ No performance threshold or numerical result is asserted by the benchmark or thi
 | `historical_source_claim` | A preserved historical document contains a claim that must not be inherited as current evidence. |
 | `infrastructure_execution_blocked` | The execution service did not assign or start a runner, so code-level outcome is unobserved. |
 
-## Current admissible claims
+## Admissible claims at the September 3 checkpoint
 
 At the current repair branch, it is admissible to say:
 

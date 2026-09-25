@@ -4,11 +4,11 @@ The computational core of Omni-Dromenon: a TypeScript server and consensus libra
 
 ## Evidence status
 
-**Current state:** proof-of-concept code under reproducibility repair. The repository now defines strict typecheck, deterministic functional tests, and a seeded in-process benchmark, but no successful GitHub Actions runner execution or benchmark artifact has yet been recovered for this branch.
+**Current state:** proof-of-concept code with native reproducibility evidence. [Run 36084110788](https://github.com/4444J99/metasystem-master/actions/runs/36084110788) executed the runtime, claim and structure guards, frozen installation, strict typecheck, all discovered core tests, benchmark, and artifact upload. Its candidate is `9c7ac7042d762a72b2bec440e50cd8585edf8782`; the executed merge is `b3843de97e6a97a8f8bf749010db3a4955d02658`, with the same tree. Later-head and accepted-main verification are tracked separately in [#82](https://github.com/4444J99/metasystem-master/issues/82).
 
 **Current admissible claim:** the source contains inspectable consensus and override implementations plus test and benchmark entrypoints. It does not yet establish production readiness, audience-device latency, WebSocket latency, throughput, delivery rate, concurrent-user capacity, rehearsal behavior, or live-performance outcomes.
 
-**Next gate:** obtain a complete strict workflow run, preserve exact compiler/test output and the JSON benchmark artifact, then repeat the benchmark in declared environments. No latency threshold is asserted by the baseline.
+**Next evidence gate:** retain strict verification at each accepted head, then collect repeated measurements and separately instrument end-to-end behavior before broad performance claims. No latency threshold is asserted by the baseline.
 
 See [`../../docs/reproducibility/core-engine-evidence-status.md`](../../docs/reproducibility/core-engine-evidence-status.md) for the claim register and evidence boundary.
 

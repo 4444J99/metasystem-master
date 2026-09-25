@@ -2,7 +2,7 @@
 
 > A research and artistic software system for audience-participatory performance: audience inputs are aggregated through weighted consensus while performers retain explicit override authority.
 
-**Repository status:** active proof-of-concept under reproducibility and claim repair. Source code, tests, examples, infrastructure files, and extensive design documentation are present. A successful strict core-engine workflow, preserved benchmark artifact, current deployment record, rehearsal record, and live-performance validation have **not** yet been established for the current repair branch.
+**Repository status:** active proof-of-concept with recovered native core-engine verification. The integration line has produced strict compiler/test logs and a preserved benchmark artifact. Exact-head monorepo validation and accepted-main closeout are tracked in [issue #82](https://github.com/4444J99/metasystem-master/issues/82). Current deployment, rehearsal, and live-performance validation remain separate, unestablished gates.
 
 [Evidence status](docs/reproducibility/core-engine-evidence-status.md) · [Core engine](packages/core-engine/) · [Examples](examples/) · [Documentation](docs/) · [Contributing](.github/CONTRIBUTING.md)
 
@@ -33,8 +33,8 @@ Those facts are implementation facts. They do not, by themselves, prove that the
 |---|---|
 | Is there inspectable source for weighted consensus and performer override? | Yes. |
 | Are deterministic functional tests and a benchmark entrypoint defined? | Yes. |
-| Has the strict core workflow produced complete compiler/test logs at the current branch head? | Not yet; GitHub Actions terminates before runner steps are recorded. |
-| Is there a preserved benchmark JSON artifact for the current branch? | Not yet. |
+| Has the strict core workflow produced complete compiler/test logs for the integration line? | Yes: [native run 36084110788](https://github.com/4444J99/metasystem-master/actions/runs/36084110788), candidate `9c7ac7042d762a72b2bec440e50cd8585edf8782`. Later-head acceptance is recorded separately in #82. |
+| Is there preserved benchmark JSON evidence for the integration line? | Yes: artifact `10843446354`, recording executed merge SHA `b3843de97e6a97a8f8bf749010db3a4955d02658`. Candidate and executed-merge trees both equal `5d0f67b6aba3ea330a0cf447cafe28ccf691db35`. |
 | Is any latency, throughput, delivery, error-rate, or connection-capacity result currently admissible? | No. Earlier numerical claims are being removed or reduced to explicit targets/history. |
 | Is there current deployment evidence? | Not established. Infrastructure files are not deployment evidence. |
 | Is there rehearsal or live-performance evidence? | Not established in the current evidence lane. |
