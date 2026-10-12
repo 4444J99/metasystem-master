@@ -10,7 +10,7 @@ on:
 jobs:
   dispatch-commercialize:
     if: github.event.label.name == 'ready-for-commercialization'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       issues: write
     steps:
