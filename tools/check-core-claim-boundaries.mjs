@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 
 const ACTIVE_SURFACES = [
   'README.md',
@@ -79,35 +80,61 @@ function lineNumber(source, offset) {
   return source.slice(0, offset).split('\n').length;
 }
 
-const failures = [];
-
-for (const path of ACTIVE_SURFACES) {
-  const source = await readFile(path, 'utf8');
+// Only a controlled evidence-disclaimer grammar grants an exemption. Soft line
+// wraps and Markdown emphasis are normalized; offsets still map to the source.
+export function findFailures(source, path = '<fixture>') {
+  const offsets = [];
+  let normalized = '';
+  for (let i = 0; i < source.length; i += 1) {
+    if ('*_`'.includes(source[i])) continue;
+    offsets.push(i);
+    normalized += source[i];
+  }
+  const disclaimer = /\bThe\s+repository\s+does\s+not\s+currently\s+contain\s+a\s+preserved,\s+reproducible\s+artifact\s+supporting\s+earlier\s+claims\s+of\s+([^.!?;]+)[.!?]/gi;
+  const exclusions = [];
+  for (const match of normalized.matchAll(disclaimer)) {
+    // Embedded quotations, hypothetical clauses, and negations of the
+    // disclaimer are not the controlled standalone disclaimer.
+    const prefix = normalized.slice(0, match.index).split(/[.!?]/).at(-1);
+    if (prefix.trim() !== '') continue;
+    // Fail closed if the list contains a new affirmative clause or unknown item.
+    const items = match[1].split(',').map(item => item.trim().replace(/^(?:and|or)\s+/i, '').replace(/\s+/g, ' '));
+    const item = /^(?:2 ms P95 latency|100\s*% (?:message )?delivery|0\s*% errors|a particular participant count|live-performance validation)$/i;
+    if (items.every(value => item.test(value))) exclusions.push([match.index, match.index + match[0].length]);
+  }
+  const failures = [];
   for (const rule of PROHIBITED) {
-    const match = rule.pattern.exec(source);
-    if (!match || match.index === undefined) continue;
-    failures.push({
-      path,
-      line: lineNumber(source, match.index),
-      id: rule.id,
-      text: match[0],
-      explanation: rule.explanation,
-    });
+    for (const match of normalized.matchAll(new RegExp(rule.pattern.source, 'gi'))) {
+      if (exclusions.some(([start, end]) => match.index >= start && match.index + match[0].length <= end)) continue;
+      failures.push({ path, line: lineNumber(source, offsets[match.index]), id: rule.id,
+        text: match[0], explanation: rule.explanation });
+    }
   }
+  return failures;
 }
 
-if (failures.length > 0) {
-  console.error('Unsupported active claim language detected:\n');
-  for (const failure of failures) {
-    console.error(
-      `${failure.path}:${failure.line} [${failure.id}] ${JSON.stringify(failure.text)}`,
-    );
-    console.error(`  ${failure.explanation}`);
+async function main() {
+  const failures = [];
+  for (const path of ACTIVE_SURFACES) {
+    failures.push(...findFailures(await readFile(path, 'utf8'), path));
   }
-  process.exitCode = 1;
-} else {
-  console.log(
-    `Claim-boundary check passed for ${ACTIVE_SURFACES.length} active surfaces and ${PROHIBITED.length} prohibited patterns.`,
-  );
-  console.log('Historical cold storage and explicitly labeled target tables are outside this narrow gate.');
+
+  if (failures.length > 0) {
+    console.error('Unsupported active claim language detected:\n');
+    for (const failure of failures) {
+      console.error(
+        `${failure.path}:${failure.line} [${failure.id}] ${JSON.stringify(failure.text)}`,
+      );
+      console.error(`  ${failure.explanation}`);
+    }
+    process.exitCode = 1;
+  } else {
+    console.log(
+      `Claim-boundary check passed for ${ACTIVE_SURFACES.length} active surfaces and ${PROHIBITED.length} prohibited patterns.`,
+    );
+    console.log('Historical cold storage and explicitly labeled target tables are outside this narrow gate.');
+  }
+
 }
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

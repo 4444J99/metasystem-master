@@ -27,7 +27,7 @@ import { createAggregator } from './consensus/parameter-aggregation.js';
 // SERVER INITIALIZATION
 // =============================================================================
 
-const app = express();
+const app: express.Express = express();
 const httpServer = createServer(app);
 
 const io = new SocketIOServer(httpServer, {
