@@ -1,0 +1,42 @@
+{
+  "results/experiments.json": {
+    "bytes": 1228906,
+    "sha256": "e07b70e3357c8169dd5ff6eafe619655972bc70e925e9502157a7eb862b7bc24"
+  },
+  "results/aggregation-experiments.json": {
+    "bytes": 1343,
+    "sha256": "c4c2e4c277d27674a38bc31311a72ca06cdebbf44c68fd30a1030de8a79e1f4c"
+  },
+  "results/benchmark-1.json": {
+    "bytes": 2403,
+    "sha256": "adb94d2625d3da9cf3aad8b91f631adddd6d3cbfa1e97ec5ee7f7416c9741906"
+  },
+  "results/benchmark-2.json": {
+    "bytes": 2404,
+    "sha256": "637959ebbbb29e6f343501159175ede0028c06b31837c084e724e069f5e9e8eb"
+  },
+  "results/benchmark-3.json": {
+    "bytes": 2403,
+    "sha256": "48a859c965f89e16ee0c2263d5ddca73f4307d97b6a4b5a4c7dfc26abfad08a0"
+  },
+  "results/benchmark-4.json": {
+    "bytes": 2405,
+    "sha256": "6c057d88486dddb246d0393cc93e6485c7575d54103ec7dead055c6b61600e9d"
+  },
+  "results/benchmark-5.json": {
+    "bytes": 2402,
+    "sha256": "396e11bc40de4f7e1697e67e755765322957980476254d2bc3d7ab75549e83a6"
+  },
+  "results/benchmark-replication.json": {
+    "bytes": 14181,
+    "sha256": "56b40eec3fe5e3aeb39368d59573e91a9fecd7929b76eda9b8ee2e6e51565c68"
+  },
+  "results/analytic-crosscheck.json": {
+    "bytes": 1822,
+    "sha256": "a95540cbab2ede1af6e7da7d84041eebb832c8d2477eab1d720d14c984a04322"
+  },
+  "results/final-adapter-verification.json": {
+    "bytes": 291,
+    "sha256": "367e883027603e09aa17c6d78556ffee423e5a1032d1275e52b450c56d05850c"
+  }
+}
