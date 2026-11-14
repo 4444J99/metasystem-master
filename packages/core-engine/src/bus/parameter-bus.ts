@@ -1,11 +1,11 @@
 /**
  * Parameter Bus for Omni-Dromenon-Engine
- * 
+ *
  * Event-driven pub/sub system for routing parameter changes
  * between audience inputs, consensus engine, performers, and outputs.
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import {
   type ConsensusResult,
   type ConsensusSnapshot,
@@ -21,27 +21,27 @@ export enum BusEvent {
   // Input events
   AUDIENCE_INPUT = 'audience:input',
   AUDIENCE_INPUT_BATCH = 'audience:input:batch',
-  
+
   // Consensus events
   CONSENSUS_UPDATE = 'consensus:update',
   CONSENSUS_SNAPSHOT = 'consensus:snapshot',
-  
+
   // Performer events
   PERFORMER_OVERRIDE = 'performer:override',
   PERFORMER_OVERRIDE_CLEAR = 'performer:override:clear',
   PERFORMER_COMMAND = 'performer:command',
-  
+
   // Session events
   SESSION_START = 'session:start',
   SESSION_PAUSE = 'session:pause',
   SESSION_RESUME = 'session:resume',
   SESSION_END = 'session:end',
-  
+
   // Participant events
   PARTICIPANT_JOIN = 'participant:join',
   PARTICIPANT_LEAVE = 'participant:leave',
   PARTICIPANT_UPDATE = 'participant:update',
-  
+
   // System events
   ERROR = 'error',
   WARNING = 'warning',
@@ -101,119 +101,113 @@ export class ParameterBus extends EventEmitter implements TypedEventEmitter {
     queueDepth: 0,
     latencyMs: 0,
   };
-  
+
   private inputCount = 0;
   private consensusCount = 0;
   private lastStatsReset = Date.now();
-  
+  private statsTimer: ReturnType<typeof setInterval> | null;
+
   constructor() {
     super();
     this.setMaxListeners(100);
-    
-    // Start stats collection
-    setInterval(() => this.collectStats(), 1000);
+
+    this.statsTimer = setInterval(() => this.collectStats(), 1_000);
+    // Periodic statistics must not keep a command or test process alive after
+    // all substantive work has completed.
+    this.statsTimer.unref();
   }
-  
+
   // ===========================================================================
   // TYPED EMIT/SUBSCRIBE
   // ===========================================================================
-  
-  /**
-   * Emit a typed event.
-   */
+
+  /** Emit a typed event. */
   publish<E extends BusEvent>(event: E, payload: BusEventPayloads[E]): boolean {
     return this.emit(event, payload);
   }
-  
-  /**
-   * Subscribe to a typed event.
-   */
+
+  /** Subscribe to a typed event. */
   subscribe<E extends BusEvent>(event: E, handler: BusEventHandler<E>): () => void {
     this.on(event, handler);
     return () => this.off(event, handler);
   }
-  
-  /**
-   * Subscribe once to a typed event.
-   */
+
+  /** Subscribe once to a typed event. */
   subscribeOnce<E extends BusEvent>(event: E, handler: BusEventHandler<E>): void {
     this.once(event, handler);
   }
-  
+
   // ===========================================================================
   // CONVENIENCE METHODS
   // ===========================================================================
-  
-  /**
-   * Publish audience input.
-   */
+
+  /** Publish audience input. */
   publishInput(input: AudienceInput): void {
-    this.inputCount++;
+    this.inputCount += 1;
     this.publish(BusEvent.AUDIENCE_INPUT, input);
   }
-  
-  /**
-   * Publish batch of inputs.
-   */
+
+  /** Publish batch of inputs. */
   publishInputBatch(inputs: AudienceInput[]): void {
     this.inputCount += inputs.length;
     this.publish(BusEvent.AUDIENCE_INPUT_BATCH, inputs);
   }
-  
-  /**
-   * Publish consensus update.
-   */
+
+  /** Publish consensus update. */
   publishConsensus(result: ConsensusResult): void {
-    this.consensusCount++;
+    this.consensusCount += 1;
     this.publish(BusEvent.CONSENSUS_UPDATE, result);
   }
-  
-  /**
-   * Publish consensus snapshot.
-   */
+
+  /** Publish consensus snapshot. */
   publishSnapshot(snapshot: ConsensusSnapshot): void {
     this.publish(BusEvent.CONSENSUS_SNAPSHOT, snapshot);
   }
-  
-  /**
-   * Publish performer override.
-   */
+
+  /** Publish performer override. */
   publishOverride(override: PerformerOverride): void {
     this.publish(BusEvent.PERFORMER_OVERRIDE, override);
   }
-  
-  /**
-   * Publish error.
-   */
+
+  /** Publish error. */
   publishError(code: string, message: string, context?: unknown): void {
     this.publish(BusEvent.ERROR, { code, message, context });
   }
-  
+
   // ===========================================================================
   // STATS
   // ===========================================================================
-  
+
   private collectStats(): void {
     const now = Date.now();
-    const elapsed = (now - this.lastStatsReset) / 1000;
-    
+    const elapsed = (now - this.lastStatsReset) / 1_000;
+
     this.stats = {
-      inputsPerSecond: this.inputCount / elapsed,
-      consensusUpdatesPerSecond: this.consensusCount / elapsed,
+      inputsPerSecond: elapsed > 0 ? this.inputCount / elapsed : 0,
+      consensusUpdatesPerSecond: elapsed > 0 ? this.consensusCount / elapsed : 0,
       activeSubscribers: this.listenerCount(BusEvent.CONSENSUS_UPDATE),
-      queueDepth: 0, // Would need async queue for this
-      latencyMs: 0, // Measured externally
+      queueDepth: 0, // No asynchronous queue is implemented in this class.
+      latencyMs: 0, // No latency measurement is implemented in this class.
     };
-    
+
     this.inputCount = 0;
     this.consensusCount = 0;
     this.lastStatsReset = now;
-    
+
     this.publish(BusEvent.STATS, this.stats);
   }
-  
+
   getStats(): BusStats {
     return { ...this.stats };
+  }
+
+  /** Stop periodic work and release every listener owned by this bus. */
+  dispose(): void {
+    if (this.statsTimer) {
+      clearInterval(this.statsTimer);
+      this.statsTimer = null;
+    }
+    this.removeAllListeners();
   }
 }
 

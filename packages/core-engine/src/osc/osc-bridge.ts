@@ -217,7 +217,9 @@ export class OSCBridge extends EventEmitter {
   // ===========================================================================
   
   private handleIncoming(msg: osc.OscMessage): void {
-    const { address, args } = msg;
+    const { address } = msg;
+    // osc.js may unpack one metadata argument into a scalar by default.
+    const args = Array.isArray(msg.args) ? msg.args : [msg.args];
     
     // Parse address to extract parameter
     const prefix = this.config.addressPrefix;
