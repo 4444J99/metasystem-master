@@ -115,10 +115,33 @@ export const sessionConfig = {
 // AUTH CONFIG
 // =============================================================================
 
+const KNOWN_DEV_PLACEHOLDERS = new Set([
+  'dev-secret-change-me',
+  'admin-secret-change-me',
+  'jwt-secret-change-me',
+]);
+
+function getAuthSecret(key: string, defaultValue: string): string {
+  const value = process.env[key];
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (isProd) {
+    if (!value || value.trim() === '') {
+      throw new Error(`Missing required production environment variable: ${key}`);
+    }
+    if (KNOWN_DEV_PLACEHOLDERS.has(value)) {
+      throw new Error(`Invalid production environment variable: ${key} cannot use default development placeholder`);
+    }
+    return value;
+  }
+
+  return value ?? defaultValue;
+}
+
 export const authConfig = {
-  performerSecret: getEnv('PERFORMER_SECRET', 'dev-secret-change-me'),
-  adminSecret: getEnv('ADMIN_SECRET', 'admin-secret-change-me'),
-  jwtSecret: getEnv('JWT_SECRET', 'jwt-secret-change-me'),
+  performerSecret: getAuthSecret('PERFORMER_SECRET', 'dev-secret-change-me'),
+  adminSecret: getAuthSecret('ADMIN_SECRET', 'admin-secret-change-me'),
+  jwtSecret: getAuthSecret('JWT_SECRET', 'jwt-secret-change-me'),
   jwtExpiry: getEnv('JWT_EXPIRY', '24h'),
 };
 
