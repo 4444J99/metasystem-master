@@ -8,10 +8,13 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "vitest",
-    "test:bench": "node src/benchmarks/consensus-bench.ts",
+    "test": "vitest run --reporter=verbose",
+    "test:bench": "node --import tsx src/benchmarks/consensus-bench.ts",
     "docker:build": "docker build -t omni-dromenon-engine:latest .",
-    "docker:run": "docker-compose up"
+    "docker:run": "docker-compose up",
+    "typecheck": "tsc --noEmit",
+    "test:watch": "vitest",
+    "evidence": "pnpm typecheck && pnpm test && pnpm test:bench"
   },
   "keywords": [
     "performance",
@@ -34,18 +37,18 @@
   "dependencies": {
     "express": "^5.2.1",
     "socket.io": "^4.7.2",
-    "redis": "^6.0.0",
+    "redis": "^6.2.1",
     "osc": "^2.4.4",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "typescript": "^6.0.3",
-    "tsx": "^4.22.4",
-    "vitest": "^4.1.9",
-    "@types/node": "^26.0.0",
+    "typescript": "^7.0.2",
+    "tsx": "^4.23.13",
+    "vitest": "^5.0.1",
+    "@types/node": "^26.6.2",
     "@types/express": "^5.0.6"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
   }
 }

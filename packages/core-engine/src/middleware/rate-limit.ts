@@ -2,11 +2,7 @@
  * Rate Limiting Middleware for Omni-Dromenon-Engine
  */
 
-import { Request, Response, NextFunction } from 'express';
-
-// =============================================================================
-// TYPES
-// =============================================================================
+import { type Request, type Response, type NextFunction } from 'express';
 
 interface RateLimitEntry {
   count: number;
@@ -16,147 +12,118 @@ interface RateLimitEntry {
 interface RateLimitConfig {
   windowMs: number;
   maxRequests: number;
-  keyGenerator: (req: Request) => string;
-  handler: (req: Request, res: Response) => void;
+  keyGenerator: (request: Request) => string;
+  handler: (request: Request, response: Response) => void;
 }
-
-// =============================================================================
-// RATE LIMITER
-// =============================================================================
 
 export class RateLimiter {
   private entries: Map<string, RateLimitEntry> = new Map();
   private config: RateLimitConfig;
-  private cleanupInterval: NodeJS.Timeout;
-  
+  private cleanupInterval: ReturnType<typeof setInterval> | null;
+
   constructor(config: Partial<RateLimitConfig> = {}) {
     this.config = {
-      windowMs: config.windowMs ?? 60000,
+      windowMs: config.windowMs ?? 60_000,
       maxRequests: config.maxRequests ?? 100,
       keyGenerator: config.keyGenerator ?? this.defaultKeyGenerator,
       handler: config.handler ?? this.defaultHandler,
     };
-    
-    // Cleanup expired entries every minute
-    this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
+
+    this.cleanupInterval = setInterval(() => this.cleanup(), 60_000);
+    this.cleanupInterval.unref?.();
   }
-  
-  private defaultKeyGenerator(req: Request): string {
-    return req.ip || req.socket.remoteAddress || 'unknown';
+
+  private defaultKeyGenerator(request: Request): string {
+    return request.ip || request.socket.remoteAddress || 'unknown';
   }
-  
-  private defaultHandler(req: Request, res: Response): void {
-    res.status(429).json({
+
+  private defaultHandler(_request: Request, response: Response): void {
+    response.status(429).json({
       error: 'Too many requests',
-      retryAfter: Math.ceil(this.config.windowMs / 1000),
+      retryAfter: Math.ceil(this.config.windowMs / 1_000),
     });
   }
-  
-  /**
-   * Check if request is allowed.
-   */
-  check(key: string): { allowed: boolean; remaining: number; resetAt: number } {
-    const now = Date.now();
+
+  /** Check whether a key is allowed at an explicit evaluation time. */
+  check(
+    key: string,
+    evaluationTime: number = Date.now(),
+  ): { allowed: boolean; remaining: number; resetAt: number } {
     let entry = this.entries.get(key);
-    
-    // Create new entry if doesn't exist or expired
-    if (!entry || entry.resetAt <= now) {
+
+    if (!entry || entry.resetAt <= evaluationTime) {
       entry = {
         count: 0,
-        resetAt: now + this.config.windowMs,
+        resetAt: evaluationTime + this.config.windowMs,
       };
       this.entries.set(key, entry);
     }
-    
-    entry.count++;
-    
+
+    entry.count += 1;
+
     const allowed = entry.count <= this.config.maxRequests;
     const remaining = Math.max(0, this.config.maxRequests - entry.count);
-    
+
     return { allowed, remaining, resetAt: entry.resetAt };
   }
-  
-  /**
-   * Get middleware function.
-   */
-  middleware(): (req: Request, res: Response, next: NextFunction) => void {
-    return (req: Request, res: Response, next: NextFunction) => {
-      const key = this.config.keyGenerator(req);
+
+  /** Return an Express middleware function. */
+  middleware(): (request: Request, response: Response, next: NextFunction) => void {
+    return (request: Request, response: Response, next: NextFunction) => {
+      const key = this.config.keyGenerator(request);
       const result = this.check(key);
-      
-      // Set rate limit headers
-      res.setHeader('X-RateLimit-Limit', this.config.maxRequests);
-      res.setHeader('X-RateLimit-Remaining', result.remaining);
-      res.setHeader('X-RateLimit-Reset', Math.ceil(result.resetAt / 1000));
-      
+
+      response.setHeader('X-RateLimit-Limit', this.config.maxRequests);
+      response.setHeader('X-RateLimit-Remaining', result.remaining);
+      response.setHeader('X-RateLimit-Reset', Math.ceil(result.resetAt / 1_000));
+
       if (!result.allowed) {
-        this.config.handler(req, res);
+        this.config.handler(request, response);
         return;
       }
-      
+
       next();
     };
   }
-  
-  /**
-   * Reset limit for a key.
-   */
+
+  /** Reset one key. */
   reset(key: string): void {
     this.entries.delete(key);
   }
-  
-  /**
-   * Cleanup expired entries.
-   */
-  private cleanup(): void {
-    const now = Date.now();
+
+  /** Remove expired entries at an explicit evaluation time. */
+  cleanup(evaluationTime: number = Date.now()): void {
     for (const [key, entry] of this.entries) {
-      if (entry.resetAt <= now) {
+      if (entry.resetAt <= evaluationTime) {
         this.entries.delete(key);
       }
     }
   }
-  
-  /**
-   * Destroy limiter.
-   */
+
+  /** Stop periodic work and release stored entries. */
   destroy(): void {
-    clearInterval(this.cleanupInterval);
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
     this.entries.clear();
   }
 }
 
-// =============================================================================
-// PRE-CONFIGURED LIMITERS
-// =============================================================================
-
-/**
- * Standard API rate limiter (100 req/min).
- */
 export const apiLimiter = new RateLimiter({
-  windowMs: 60000,
+  windowMs: 60_000,
   maxRequests: 100,
 });
 
-/**
- * Strict limiter for auth endpoints (10 req/min).
- */
 export const authLimiter = new RateLimiter({
-  windowMs: 60000,
+  windowMs: 60_000,
   maxRequests: 10,
 });
 
-/**
- * Lenient limiter for WebSocket inputs (1000 req/min).
- */
 export const inputLimiter = new RateLimiter({
-  windowMs: 60000,
-  maxRequests: 1000,
+  windowMs: 60_000,
+  maxRequests: 1_000,
 });
-
-// =============================================================================
-// FACTORY
-// =============================================================================
 
 export function createRateLimiter(config?: Partial<RateLimitConfig>): RateLimiter {
   return new RateLimiter(config);

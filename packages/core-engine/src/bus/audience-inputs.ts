@@ -1,16 +1,16 @@
 /**
  * Audience Inputs Handler for Omni-Dromenon-Engine
- * 
+ *
  * Manages incoming audience inputs: validation, rate limiting,
  * batching, and publishing to the parameter bus.
  */
 
-import { v4 as uuidv4 } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import {
   type AudienceInput,
   AudienceInputSchema,
 } from '../types/index.js';
-import { ParameterBus, BusEvent } from './parameter-bus.js';
+import { ParameterBus } from './parameter-bus.js';
 import { consensusConfig } from '../config.js';
 
 // =============================================================================
@@ -42,45 +42,41 @@ export class AudienceInputsHandler {
   private config: AudienceInputsConfig;
   private clients: Map<string, ClientState>;
   private inputBuffer: AudienceInput[];
-  private batchTimer: NodeJS.Timeout | null = null;
+  private batchTimer: ReturnType<typeof setInterval> | null = null;
   private sessionId: string;
-  
+
   constructor(
     bus: ParameterBus,
     sessionId: string,
     validParameters: string[],
-    config?: Partial<AudienceInputsConfig>
+    config?: Partial<AudienceInputsConfig>,
   ) {
     this.bus = bus;
     this.sessionId = sessionId;
     this.clients = new Map();
     this.inputBuffer = [];
-    
+
     this.config = {
       rateLimitMs: config?.rateLimitMs ?? consensusConfig.inputRateLimitMs,
       maxInputsPerClient: config?.maxInputsPerClient ?? consensusConfig.maxInputsPerClient,
       batchIntervalMs: config?.batchIntervalMs ?? 50,
       validParameters: new Set(validParameters),
     };
-    
+
     this.startBatching();
   }
-  
+
   // ===========================================================================
   // INPUT PROCESSING
   // ===========================================================================
-  
-  /**
-   * Process raw input from a client.
-   * Returns true if accepted, false if rejected.
-   */
+
+  /** Process raw input from a client. */
   handleInput(
     clientId: string,
     parameter: string,
     value: number,
-    location?: { x: number; y: number; zone?: string }
+    location?: { x: number; y: number; zone?: string },
   ): { accepted: boolean; reason?: string } {
-    // Get or create client state
     let client = this.clients.get(clientId);
     if (!client) {
       client = {
@@ -91,55 +87,48 @@ export class AudienceInputsHandler {
       };
       this.clients.set(clientId, client);
     }
-    
-    // Check if client is blocked
+
     if (client.isBlocked) {
-      if (client.blockedUntil && Date.now() > client.blockedUntil) {
+      if (client.blockedUntil && Date.now() >= client.blockedUntil) {
         client.isBlocked = false;
         client.blockedUntil = undefined;
       } else {
         return { accepted: false, reason: 'client_blocked' };
       }
     }
-    
-    // Rate limiting
+
     const now = Date.now();
     if (now - client.lastInputTime < this.config.rateLimitMs) {
       return { accepted: false, reason: 'rate_limited' };
     }
-    
-    // Validate parameter
+
     if (!this.config.validParameters.has(parameter)) {
       return { accepted: false, reason: 'invalid_parameter' };
     }
-    
-    // Validate value range
+
     if (value < 0 || value > 1 || !Number.isFinite(value)) {
       return { accepted: false, reason: 'invalid_value' };
     }
-    
-    // Update client state
+
     client.lastInputTime = now;
-    client.inputCount++;
+    client.inputCount += 1;
     if (location) {
       client.location = location;
     }
-    
-    // Check for input flooding
+
     if (client.inputCount > this.config.maxInputsPerClient) {
       client.isBlocked = true;
-      client.blockedUntil = now + 60000; // Block for 1 minute
+      client.blockedUntil = now + 60_000;
       this.bus.publishError(
         'CLIENT_BLOCKED',
         `Client ${clientId} blocked for input flooding`,
-        { clientId, inputCount: client.inputCount }
+        { clientId, inputCount: client.inputCount },
       );
       return { accepted: false, reason: 'flood_blocked' };
     }
-    
-    // Create input record
+
     const input: AudienceInput = {
-      id: uuidv4(),
+      id: randomUUID(),
       clientId,
       sessionId: this.sessionId,
       timestamp: now,
@@ -147,84 +136,69 @@ export class AudienceInputsHandler {
       value,
       location: client.location,
     };
-    
-    // Add to buffer for batching
+
     this.inputBuffer.push(input);
-    
-    // Also emit individual input for real-time processing
     this.bus.publishInput(input);
-    
+
     return { accepted: true };
   }
-  
-  /**
-   * Parse and validate input from raw data.
-   */
+
+  /** Parse and validate input from raw data. */
   parseInput(data: unknown): AudienceInput | null {
     const result = AudienceInputSchema.safeParse(data);
-    if (result.success) {
-      return result.data;
-    }
-    return null;
+    return result.success ? result.data : null;
   }
-  
+
   // ===========================================================================
   // BATCHING
   // ===========================================================================
-  
+
   private startBatching(): void {
     this.batchTimer = setInterval(() => {
       this.flushBuffer();
     }, this.config.batchIntervalMs);
+    this.batchTimer.unref();
   }
-  
+
   private flushBuffer(): void {
     if (this.inputBuffer.length === 0) return;
-    
+
     const batch = [...this.inputBuffer];
     this.inputBuffer = [];
-    
+
     this.bus.publishInputBatch(batch);
   }
-  
+
   // ===========================================================================
   // CLIENT MANAGEMENT
   // ===========================================================================
-  
-  /**
-   * Update client location.
-   */
+
+  /** Update client location. */
   updateClientLocation(
     clientId: string,
-    location: { x: number; y: number; zone?: string }
+    location: { x: number; y: number; zone?: string },
   ): void {
     const client = this.clients.get(clientId);
     if (client) {
       client.location = location;
     }
   }
-  
-  /**
-   * Remove client state.
-   */
+
+  /** Remove client state. */
   removeClient(clientId: string): void {
     this.clients.delete(clientId);
   }
-  
-  /**
-   * Block a client.
-   */
-  blockClient(clientId: string, durationMs: number = 60000): void {
+
+  /** Block a client. */
+  blockClient(clientId: string, durationMs: number = 60_000): void {
     const client = this.clients.get(clientId);
     if (client) {
       client.isBlocked = true;
       client.blockedUntil = Date.now() + durationMs;
     }
   }
-  
-  /**
-   * Unblock a client.
-   */
+
+  /** Unblock a client. */
   unblockClient(clientId: string): void {
     const client = this.clients.get(clientId);
     if (client) {
@@ -232,60 +206,48 @@ export class AudienceInputsHandler {
       client.blockedUntil = undefined;
     }
   }
-  
-  /**
-   * Get client state.
-   */
+
+  /** Get client state. */
   getClientState(clientId: string): ClientState | undefined {
     return this.clients.get(clientId);
   }
-  
-  /**
-   * Get active client count.
-   */
+
+  /** Get active client count. */
   getActiveClientCount(): number {
-    const cutoff = Date.now() - 60000; // Active in last minute
+    const cutoff = Date.now() - 60_000;
     let count = 0;
     for (const client of this.clients.values()) {
       if (client.lastInputTime > cutoff && !client.isBlocked) {
-        count++;
+        count += 1;
       }
     }
     return count;
   }
-  
+
   // ===========================================================================
   // CONFIGURATION
   // ===========================================================================
-  
-  /**
-   * Add valid parameter.
-   */
+
+  /** Add valid parameter. */
   addValidParameter(parameter: string): void {
     this.config.validParameters.add(parameter);
   }
-  
-  /**
-   * Remove valid parameter.
-   */
+
+  /** Remove valid parameter. */
   removeValidParameter(parameter: string): void {
     this.config.validParameters.delete(parameter);
   }
-  
-  /**
-   * Update rate limit.
-   */
+
+  /** Update rate limit. */
   setRateLimit(ms: number): void {
     this.config.rateLimitMs = ms;
   }
-  
+
   // ===========================================================================
   // CLEANUP
   // ===========================================================================
-  
-  /**
-   * Stop batching and cleanup.
-   */
+
+  /** Stop batching and cleanup. */
   destroy(): void {
     if (this.batchTimer) {
       clearInterval(this.batchTimer);
@@ -294,10 +256,8 @@ export class AudienceInputsHandler {
     this.flushBuffer();
     this.clients.clear();
   }
-  
-  /**
-   * Reset input counts (call periodically).
-   */
+
+  /** Reset input counts. */
   resetInputCounts(): void {
     for (const client of this.clients.values()) {
       client.inputCount = 0;
@@ -313,7 +273,7 @@ export function createAudienceInputsHandler(
   bus: ParameterBus,
   sessionId: string,
   validParameters: string[],
-  config?: Partial<AudienceInputsConfig>
+  config?: Partial<AudienceInputsConfig>,
 ): AudienceInputsHandler {
   return new AudienceInputsHandler(bus, sessionId, validParameters, config);
 }
