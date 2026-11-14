@@ -1,520 +1,495 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Omni-Dromenon-Engine: Real-time audience-participatory performance system. Transform spectators into computational agents.">
-    <meta name="og:title" content="Omni-Dromenon-Engine">
-    <meta name="og:description" content="Interactive performance system where audiences become computational agents in real-time creative processes.">
-    <meta name="og:type" content="website">
-    <meta name="og:url" content="https://omni-dromenon-engine.com">
-    
-    <title>Omni-Dromenon-Engine</title>
-    
-    <link rel="stylesheet" href="/styles.css">
-    <link rel="stylesheet" href="/syntax.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&family=Source+Sans+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Evidence-bounded public overview of the Omni-Dromenon audience-participatory performance system.">
+  <title>Omni-Dromenon - Evidence Status</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #111111;
+      --muted: #5f5f5f;
+      --line: #d9d9d9;
+      --soft: #f5f5f2;
+      --paper: #ffffff;
+      --accent: #2d2d2d;
+      --ok: #174f2b;
+      --warn: #6b4b00;
+      --max: 72rem;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; text-underline-offset: 0.18em; }
+    a:hover { text-decoration-thickness: 0.14em; }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 0.75rem 1rem;
+      z-index: 10;
+    }
+
+    .skip-link:focus { left: 1rem; top: 1rem; }
+
+    header, main, footer {
+      width: min(100% - 2rem, var(--max));
+      margin-inline: auto;
+    }
+
+    header {
+      padding: 1.25rem 0 0;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wordmark {
+      font-weight: 760;
+      letter-spacing: -0.03em;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      font-size: 0.92rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.75fr);
+      gap: clamp(2rem, 6vw, 5rem);
+      align-items: start;
+      padding: clamp(4rem, 10vw, 8rem) 0 clamp(3rem, 8vw, 6rem);
+    }
+
+    .eyebrow {
+      margin: 0 0 1rem;
+      font-size: 0.78rem;
+      font-weight: 740;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { line-height: 1.08; letter-spacing: -0.035em; }
+
+    h1 {
+      max-width: 12ch;
+      margin: 0;
+      font-size: clamp(3rem, 8vw, 6.8rem);
+      font-weight: 780;
+    }
+
+    .lede {
+      max-width: 44rem;
+      margin: 1.5rem 0 0;
+      font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+      color: var(--muted);
+    }
+
+    .status-card {
+      border: 1px solid var(--ink);
+      padding: 1.25rem;
+      box-shadow: 0.45rem 0.45rem 0 0 var(--soft);
+    }
+
+    .status-card h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1.25rem;
+    }
+
+    .status-label {
+      display: inline-block;
+      margin-bottom: 1rem;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      padding: 0.25rem 0.55rem;
+      color: var(--warn);
+      font-size: 0.76rem;
+      font-weight: 760;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .status-card p { margin: 0.75rem 0; }
+    .status-card p:last-child { margin-bottom: 0; }
+
+    section {
+      padding: clamp(3rem, 8vw, 6rem) 0;
+      border-top: 1px solid var(--line);
+    }
+
+    section > h2 {
+      max-width: 18ch;
+      margin: 0 0 2rem;
+      font-size: clamp(2rem, 5vw, 4rem);
+    }
+
+    .section-intro {
+      max-width: 48rem;
+      margin: -1rem 0 2.5rem;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      min-height: 100%;
+      border: 1px solid var(--line);
+      padding: 1.25rem;
+      background: var(--paper);
+    }
+
+    .card h3 {
+      margin: 0 0 0.75rem;
+      font-size: 1.2rem;
+    }
+
+    .card p { margin: 0; color: var(--muted); }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 0.8rem;
+      font-size: 0.7rem;
+      font-weight: 760;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tag.present { color: var(--ok); }
+    .tag.pending { color: var(--warn); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.6rem;
+      margin-top: 2.5rem;
+    }
+
+    .flow div {
+      position: relative;
+      border: 1px solid var(--ink);
+      padding: 1rem;
+      font-weight: 680;
+      text-align: center;
+    }
+
+    .flow div:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -0.58rem;
+      transform: translate(50%, -50%);
+      z-index: 1;
+      padding: 0 0.2rem;
+      background: var(--paper);
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(2rem, 5vw, 4rem);
+      align-items: start;
+    }
+
+    .plain-list {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    .plain-list li + li { margin-top: 0.65rem; }
+
+    pre {
+      overflow-x: auto;
+      margin: 0;
+      border: 1px solid var(--line);
+      background: var(--soft);
+      padding: 1.2rem;
+      font: 0.9rem/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 0.9rem 0.8rem;
+      border-top: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { width: 33%; font-weight: 720; }
+
+    .callout {
+      margin-top: 2rem;
+      border-left: 0.35rem solid var(--ink);
+      background: var(--soft);
+      padding: 1rem 1.25rem;
+    }
+
+    .callout strong { display: block; margin-bottom: 0.25rem; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .button {
+      display: inline-block;
+      border: 1px solid var(--ink);
+      padding: 0.75rem 1rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .button.primary {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    footer {
+      padding: 2rem 0 3rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 850px) {
+      .hero, .two-column { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow div:not(:last-child)::after {
+        content: "↓";
+        top: auto;
+        right: 50%;
+        bottom: -0.62rem;
+        transform: translate(50%, 50%);
+      }
+    }
+
+    @media (max-width: 560px) {
+      nav { align-items: flex-start; flex-direction: column; }
+      .grid { grid-template-columns: 1fr; }
+      th, td { display: block; width: 100%; padding-inline: 0; }
+      td { border-top: 0; padding-top: 0; }
+      h1 { font-size: clamp(3rem, 17vw, 5rem); }
+    }
+  </style>
 </head>
 <body>
-    <!-- ================================================================
-         NAVIGATION
-         ================================================================ -->
-    <nav class="nav-main">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <a href="/" class="wordmark">OMNI-DROMENON</a>
-                <span class="nav-subtext">interactive performance system</span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#about">about</a></li>
-                <li><a href="#project">system</a></li>
-                <li><a href="#technical">technical</a></li>
-                <li><a href="#docs">documentation</a></li>
-                <li><a href="#contact">contact</a></li>
-            </ul>
-        </div>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header>
+    <nav aria-label="Primary navigation">
+      <div class="wordmark">OMNI-DROMENON</div>
+      <div class="nav-links">
+        <a href="#evidence">Evidence</a>
+        <a href="#model">Model</a>
+        <a href="#benchmark">Benchmark</a>
+        <a href="#gates">Gates</a>
+      </div>
     </nav>
+  </header>
 
-    <main class="main-container">
-        
-        <!-- ================================================================
-             HERO / INTRO
-             ================================================================ -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1 class="hero-title">Transform Spectators into Computational Agents</h1>
-                <p class="hero-subtitle">
-                    A real-time performance system where audiences participate in live creative processes 
-                    through smartphone interfaces, collective consensus, and performer-maintained authority.
-                </p>
-                <div class="hero-cta">
-                    <a href="#demo" class="btn btn-primary">View Demo</a>
-                    <a href="#technical" class="btn btn-secondary">Technical Specs</a>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="system-diagram">
-                    <div class="diagram-node performers">
-                        <span class="label">Performers</span>
-                        <span class="icon">🎭</span>
-                    </div>
-                    <div class="diagram-flow">
-                        <svg viewBox="0 0 100 100" class="flow-svg">
-                            <circle cx="50" cy="50" r="40" class="circle-main"/>
-                            <circle cx="50" cy="50" r="35" class="circle-inner"/>
-                            <text x="50" y="55" text-anchor="middle" class="flow-text">Parameter Bus</text>
-                        </svg>
-                    </div>
-                    <div class="diagram-node audience">
-                        <span class="label">Audience (100s)</span>
-                        <span class="icon">👥</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+  <main id="main">
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Audience-participatory performance research system</p>
+        <h1>Shared input. Explicit authority.</h1>
+        <p class="lede">Omni-Dromenon explores how an audience can shape a live artwork through weighted consensus while performers retain the power to accept, blend, resist, or lock the result.</p>
+      </div>
 
-        <!-- ================================================================
-             ABOUT / VISION
-             ================================================================ -->
-        <section id="about" class="section section-about">
-            <div class="section-header">
-                <h2>About the Project</h2>
-                <p class="section-subtitle">A research system exploring reciprocal creation through distributed agency</p>
-            </div>
-            
-            <div class="content-grid">
-                <div class="content-block">
-                    <h3>Core Question</h3>
-                    <p>
-                        How can we design performance systems where audiences participate meaningfully 
-                        in creative processes while performers maintain artistic authority? 
-                        Rather than removing constraints, we optimize for <em>constrained variation</em>—
-                        the generative space where meaningful creativity emerges.
-                    </p>
-                </div>
-                
-                <div class="content-block">
-                    <h3>Technical Validation</h3>
-                    <ul class="feature-list">
-                        <li><strong>P95 Latency:</strong> 2ms (target: &lt;100ms) ✓</li>
-                        <li><strong>Message Delivery:</strong> 100% with zero errors ✓</li>
-                        <li><strong>Concurrent Users:</strong> 50+ simultaneous participants ✓</li>
-                        <li><strong>Architecture:</strong> Node.js + Socket.io + Web Audio APIs</li>
-                    </ul>
-                </div>
-                
-                <div class="content-block">
-                    <h3>Artistic Impact</h3>
-                    <p>
-                        Genre-agnostic through modular <code>Contextual Awareness Layer</code>. 
-                        Applicable to music, dance, theater, opera, and visual art. 
-                        Audiences experience immediate consequences of their inputs, 
-                        creating feedback loops that enrich both creation and participation.
-                    </p>
-                </div>
-            </div>
+      <aside class="status-card" aria-labelledby="status-title">
+        <span class="status-label">Proof-of-concept</span>
+        <h2 id="status-title">Current evidence state</h2>
+        <p>Inspectable source, deterministic test definitions, and a seeded in-process benchmark are present.</p>
+        <p>A complete strict workflow run, benchmark artifact, deployment record, rehearsal record, and live-performance validation are not yet established.</p>
+        <p><strong>No latency or capacity result is asserted here.</strong></p>
+      </aside>
+    </div>
 
-            <div class="principles">
-                <h3>Core Principles</h3>
-                <div class="principle-grid">
-                    <div class="principle-card">
-                        <h4>Reciprocal Creation</h4>
-                        <p>Audiences and performers influence each other in real-time</p>
-                    </div>
-                    <div class="principle-card">
-                        <h4>Performer Authority</h4>
-                        <p>Transparent hierarchies and override capabilities preserve artistic control</p>
-                    </div>
-                    <div class="principle-card">
-                        <h4>Constrained Variation</h4>
-                        <p>Meaningful novelty emerges from bounded creative parameters</p>
-                    </div>
-                    <div class="principle-card">
-                        <h4>Distributed Agency</h4>
-                        <p>Consensus algorithms aggregate collective input without erasing individuality</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <section id="evidence" aria-labelledby="evidence-title">
+      <h2 id="evidence-title">What exists - and what does not</h2>
+      <p class="section-intro">Every statement on this page is classified. Implementation, checking, measurement, deployment, rehearsal, and artistic reception are different forms of evidence.</p>
 
-        <!-- ================================================================
-             PROJECT SHOWCASE
-             ================================================================ -->
-        <section id="project" class="section section-project">
-            <div class="section-header">
-                <h2>The System</h2>
-                <p class="section-subtitle">11 modular repositories for complete implementation</p>
-            </div>
+      <div class="grid">
+        <article class="card">
+          <span class="tag present">Present</span>
+          <h3>Inspectable implementation</h3>
+          <p>Weighted-consensus source, performer override modes, parameter-bus paths, interfaces, examples, and infrastructure files.</p>
+        </article>
+        <article class="card">
+          <span class="tag present">Present</span>
+          <h3>Reproducibility design</h3>
+          <p>Deterministic tests, an injectable evaluation clock, a seeded benchmark, JSON output, and a strict workflow definition.</p>
+        </article>
+        <article class="card">
+          <span class="tag pending">Pending</span>
+          <h3>Locked execution</h3>
+          <p>GitHub Actions currently terminates before runner steps are recorded, so no current compiler, test, or benchmark pass is claimed.</p>
+        </article>
+        <article class="card">
+          <span class="tag pending">Not established</span>
+          <h3>Operational metrics</h3>
+          <p>No current latency, throughput, delivery, error-rate, memory, or participant-capacity result is admissible.</p>
+        </article>
+        <article class="card">
+          <span class="tag pending">Not established</span>
+          <h3>Deployment</h3>
+          <p>Container and cloud files describe possible deployment paths. They do not prove a running service.</p>
+        </article>
+        <article class="card">
+          <span class="tag pending">Not established</span>
+          <h3>Human and artistic outcomes</h3>
+          <p>No current evidence lane establishes rehearsal use, live-performance operation, usability, reception, or artistic success.</p>
+        </article>
+      </div>
+    </section>
 
-            <div class="architecture-overview">
-                <h3>Architecture Layers</h3>
-                
-                <div class="arch-layer">
-                    <div class="arch-label">Core System</div>
-                    <div class="arch-repos">
-                        <div class="repo-card">
-                            <h4>core-engine</h4>
-                            <p>WebSocket server, consensus algorithms, parameter distribution</p>
-                            <code>Node.js + Socket.io</code>
-                        </div>
-                        <div class="repo-card">
-                            <h4>performance-sdk</h4>
-                            <p>Unified interface for performers and audience participants</p>
-                            <code>React + TypeScript</code>
-                        </div>
-                        <div class="repo-card">
-                            <h4>audio-synthesis-bridge</h4>
-                            <p>OSC ↔ Web Audio gateway for external synthesizers</p>
-                            <code>Node.js + osc.js</code>
-                        </div>
-                    </div>
-                </div>
+    <section id="model" aria-labelledby="model-title">
+      <h2 id="model-title">The authority model</h2>
+      <p class="section-intro">The system is designed as repeated negotiation rather than polling. The audience contributes; the algorithm aggregates; the performer remains able to intervene.</p>
 
-                <div class="arch-layer">
-                    <div class="arch-label">Documentation & Examples</div>
-                    <div class="arch-repos">
-                        <div class="repo-card">
-                            <h4>docs</h4>
-                            <p>Theory, specifications, deployment guides, API reference</p>
-                            <code>MkDocs + Material</code>
-                        </div>
-                        <div class="repo-card">
-                            <h4>example-generative-music</h4>
-                            <p>Working proof-of-concept: audience controls tempo, timbre, form</p>
-                            <code>SuperCollider + Node.js</code>
-                        </div>
-                        <div class="repo-card">
-                            <h4>example-choreographic-interface</h4>
-                            <p>Dancers receive spatial parameters from audience consensus</p>
-                            <code>Motion capture + OSC</code>
-                        </div>
-                    </div>
-                </div>
+      <div class="flow" aria-label="Audience input to output flow">
+        <div>Audience input</div>
+        <div>Parameter bus</div>
+        <div>Weighted consensus</div>
+        <div>Performer override</div>
+        <div>Artistic output</div>
+      </div>
 
-                <div class="arch-layer">
-                    <div class="arch-label">Ecosystem & Publishing</div>
-                    <div class="arch-repos">
-                        <div class="repo-card">
-                            <h4>academic-publication</h4>
-                            <p>Peer-reviewed papers, conference submissions, research artifacts</p>
-                        </div>
-                        <div class="repo-card">
-                            <h4>artist-toolkit-and-templates</h4>
-                            <p>Grant prospecting templates, artist onboarding materials</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================================================================
-             TECHNICAL DEEP DIVE
-             ================================================================ -->
-        <section id="technical" class="section section-technical">
-            <div class="section-header">
-                <h2>Technical Specifications</h2>
-                <p class="section-subtitle">Validated prototype with production-ready architecture</p>
-            </div>
-
-            <div class="tech-grid">
-                <div class="tech-card">
-                    <h3>Consensus Algorithm</h3>
-                    <p>Weighted temporal-proximity voting aggregates audience inputs without centralized authority</p>
-                    <pre><code>
-// Simplified consensus logic
-const weights = participants.map(p => 
-  Math.exp(-alpha * (now - p.timestamp))
-);
-const parameter = average(
-  participants.map((p, i) => p.value * weights[i])
-) / sum(weights);
-                    </code></pre>
-                </div>
-
-                <div class="tech-card">
-                    <h3>Real-Time Parameter Bus</h3>
-                    <p>Distributed event system routing performer overrides and audience consensus to performance engines</p>
-                    <ul class="spec-list">
-                        <li>P95 Latency: 2ms</li>
-                        <li>Message Delivery: 100%</li>
-                        <li>Throughput: 1000+ events/sec</li>
-                        <li>Concurrent: 50+ participants</li>
-                    </ul>
-                </div>
-
-                <div class="tech-card">
-                    <h3>Contextual Awareness Layer</h3>
-                    <p>Genre-agnostic abstraction enabling same core system across music, dance, theater</p>
-                    <pre><code>
-interface ContextualAwareness {
-  performanceMode: string;
-  parameterSchema: Schema;
-  consensusWeighting: WeightFunction;
-  overrideHierarchy: Permission[];
-}
-                    </code></pre>
-                </div>
-
-                <div class="tech-card">
-                    <h3>Deployment Stack</h3>
-                    <ul class="tech-stack">
-                        <li><strong>Runtime:</strong> Node.js 20+ LTS</li>
-                        <li><strong>Communication:</strong> Socket.io (WebSocket fallback)</li>
-                        <li><strong>Database:</strong> Firestore (Google Cloud)</li>
-                        <li><strong>Cache:</strong> Redis (Memorystore)</li>
-                        <li><strong>Container:</strong> Docker + Cloud Run</li>
-                        <li><strong>CI/CD:</strong> GitHub Actions</li>
-                    </ul>
-                </div>
-
-                <div class="tech-card">
-                    <h3>Synthesis Integration</h3>
-                    <p>OSC bridge connects Web Audio API to external synthesizers</p>
-                    <ul class="spec-list">
-                        <li>SuperCollider integration (working)</li>
-                        <li>Max/MSP compatible</li>
-                        <li>Pure Data compatible</li>
-                        <li>Custom synthesizers (via OSC)</li>
-                    </ul>
-                </div>
-
-                <div class="tech-card">
-                    <h3>Mobile-First Audience Interface</h3>
-                    <p>Progressive Web App for participant smartphones</p>
-                    <ul class="spec-list">
-                        <li>Works offline (queued messaging)</li>
-                        <li>No installation required</li>
-                        <li>Responsive design (phone → tablet)</li>
-                        <li>Accessible (WCAG 2.1 AA)</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================================================================
-             LIVE DEMO / VIDEO
-             ================================================================ -->
-        <section id="demo" class="section section-demo">
-            <div class="section-header">
-                <h2>See It In Action</h2>
-                <p class="section-subtitle">Working prototype demonstration</p>
-            </div>
-
-            <div class="demo-container">
-                <div class="demo-video">
-                    <iframe width="100%" height="600" 
-                        src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
-
-                <div class="demo-info">
-                    <h3>Proof of Concept: Generative Music Performance</h3>
-                    <p>
-                        This demonstration shows 30 audience members controlling musical parameters in real-time. 
-                        Sliders control: tempo, timbre filter, harmonic density, and reverb. 
-                        The performer maintains override authority and can freeze/reset consensus votes.
-                    </p>
-                    <div class="demo-specs">
-                        <div class="spec-item">
-                            <span class="spec-label">Participants:</span> 30
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-label">Latency:</span> 2ms P95
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-label">Duration:</span> 12 min
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="demo-cta">
-                <p>Want to try it? Scan this QR code or visit the live performer interface:</p>
-                <a href="https://omni-dromenon-engine.com/performer" class="btn btn-primary">
-                    Open Performer Dashboard
-                </a>
-            </div>
-        </section>
-
-        <!-- ================================================================
-             DOCUMENTATION
-             ================================================================ -->
-        <section id="docs" class="section section-docs">
-            <div class="section-header">
-                <h2>Documentation</h2>
-                <p class="section-subtitle">Complete guides, API references, and research materials</p>
-            </div>
-
-            <div class="docs-grid">
-                <a href="/docs/getting-started/" class="docs-card">
-                    <h3>Getting Started</h3>
-                    <p>Set up a local development environment and run the first example</p>
-                </a>
-
-                <a href="/docs/architecture/" class="docs-card">
-                    <h3>System Architecture</h3>
-                    <p>Deep dive into core-engine design, consensus algorithms, and module interactions</p>
-                </a>
-
-                <a href="/docs/api/" class="docs-card">
-                    <h3>API Reference</h3>
-                    <p>WebSocket events, REST endpoints, and integration patterns</p>
-                </a>
-
-                <a href="/docs/deployment/" class="docs-card">
-                    <h3>Deployment Guide</h3>
-                    <p>Docker setup, Google Cloud configuration, production best practices</p>
-                </a>
-
-                <a href="/docs/research/" class="docs-card">
-                    <h3>Research & Theory</h3>
-                    <p>Peer-reviewed papers, precedent analysis, philosophical foundations</p>
-                </a>
-
-                <a href="/docs/artist-guide/" class="docs-card">
-                    <h3>Artist Guide</h3>
-                    <p>How to create new performance templates and integrate your own systems</p>
-                </a>
-            </div>
-        </section>
-
-        <!-- ================================================================
-             CREATOR / ABOUT
-             ================================================================ -->
-        <section id="creator" class="section section-creator">
-            <div class="section-header">
-                <h2>The Creator</h2>
-            </div>
-
-            <div class="creator-profile">
-                <div class="creator-bio">
-                    <h3>Anthony J. Pryor</h3>
-                    <p class="creator-title">Multimedia Artist, Technologist, Researcher</p>
-                    
-                    <p>
-                        Anthony is a multimedia artist and researcher with an MFA in Creative Writing 
-                        (Florida Atlantic University) and BA in Literature (CUNY College of Staten Island). 
-                        His practice spans performance theory, technical systems design, and philosophical 
-                        frameworks grounded in process philosophy, quantum mechanics, and complexity theory.
-                    </p>
-
-                    <p>
-                        The Omni-Dromenon-Engine addresses a personal pattern of "hoarding the microphone"—
-                        instead of solving this through forced equality, the system builds frameworks where 
-                        others can meaningfully participate in creative processes while preserving artistic 
-                        coherence and performer authority.
-                    </p>
-
-                    <div class="creator-links">
-                        <a href="https://github.com/4444JPP" class="link-btn">GitHub Profile</a>
-                        <a href="https://twitter.com/4444JPP" class="link-btn">Twitter/X</a>
-                        <a href="mailto:anthony@omni-dromenon-engine.com" class="link-btn">Email</a>
-                    </div>
-                </div>
-
-                <div class="creator-cv">
-                    <h3>Selected Background</h3>
-                    <ul class="cv-list">
-                        <li><strong>Education:</strong> MFA Creative Writing (FAU), BA Literature (CUNY-CSI)</li>
-                        <li><strong>Technical Stack:</strong> Node.js, TypeScript, React, Python, SuperCollider, Docker</li>
-                        <li><strong>Specialties:</strong> Interactive systems design, real-time performance, algorithmic composition</li>
-                        <li><strong>Philosophy:</strong> Process philosophy, distributed agency, reciprocal creation</li>
-                        <li><strong>Funders:</strong> S+T+ARTS Prize, Ars Electronica, Creative Capital</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================================================================
-             CONTACT / CTA
-             ================================================================ -->
-        <section id="contact" class="section section-contact">
-            <div class="section-header">
-                <h2>Get Involved</h2>
-                <p class="section-subtitle">Collaborate, contribute, or deploy your own instance</p>
-            </div>
-
-            <div class="contact-grid">
-                <div class="contact-card">
-                    <h3>For Artists</h3>
-                    <p>Create new performance templates using the Artist Toolkit</p>
-                    <a href="/docs/artist-guide/" class="btn btn-secondary">Read Artist Guide</a>
-                </div>
-
-                <div class="contact-card">
-                    <h3>For Developers</h3>
-                    <p>Contribute to core system or extend with new synthesis engines</p>
-                    <a href="https://github.com/omni-dromenon-engine" class="btn btn-secondary">GitHub Organization</a>
-                </div>
-
-                <div class="contact-card">
-                    <h3>For Researchers</h3>
-                    <p>Access academic papers, datasets, and evaluation frameworks</p>
-                    <a href="/docs/research/" class="btn btn-secondary">Research Hub</a>
-                </div>
-
-                <div class="contact-card">
-                    <h3>For Presenters</h3>
-                    <p>Book a performance or workshop for your venue</p>
-                    <a href="mailto:booking@omni-dromenon-engine.com" class="btn btn-secondary">booking@omni-dromenon-engine.com</a>
-                </div>
-            </div>
-
-            <div class="newsletter-signup">
-                <h3>Stay Updated</h3>
-                <form class="signup-form">
-                    <input type="email" placeholder="your@email.com" required>
-                    <button type="submit" class="btn btn-primary">Subscribe</button>
-                </form>
-                <p class="form-note">Monthly updates on deployments, research findings, and upcoming performances</p>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ================================================================
-         FOOTER
-         ================================================================ -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>Omni-Dromenon-Engine</h4>
-                <p>Real-time audience-participatory performance system</p>
-                <ul class="footer-links">
-                    <li><a href="https://github.com/omni-dromenon-engine">GitHub</a></li>
-                    <li><a href="/docs/">Documentation</a></li>
-                    <li><a href="/blog/">Blog</a></li>
-                    <li><a href="/press/">Press Kit</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h4>Legal</h4>
-                <ul class="footer-links">
-                    <li><a href="/license/">License (Apache 2.0)</a></li>
-                    <li><a href="/privacy/">Privacy Policy</a></li>
-                    <li><a href="/conduct/">Code of Conduct</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h4>Creator</h4>
-                <p>Anthony J. Pryor</p>
-                <p><a href="mailto:anthony@omni-dromenon-engine.com">anthony@omni-dromenon-engine.com</a></p>
-            </div>
+      <div class="two-column" style="margin-top: 3rem;">
+        <div>
+          <h3>Consensus components</h3>
+          <ul class="plain-list">
+            <li><strong>Spatial:</strong> distance from a declared stage position.</li>
+            <li><strong>Temporal:</strong> age relative to an explicit evaluation clock.</li>
+            <li><strong>Agreement:</strong> the proportion of nearby values in the current cohort.</li>
+            <li><strong>Filtering:</strong> weighted deviation and optional outlier removal.</li>
+            <li><strong>Smoothing:</strong> interpolation from a prior value.</li>
+          </ul>
         </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2025 Omni-Dromenon-Engine. Licensed under Apache 2.0.</p>
-            <p>Built with clarity, rigor, and reciprocal creation.</p>
+        <div>
+          <h3>Performer modes</h3>
+          <ul class="plain-list">
+            <li><strong>Absolute:</strong> replace the computed value.</li>
+            <li><strong>Blend:</strong> combine performer and audience values.</li>
+            <li><strong>Lock:</strong> hold a performer-selected value.</li>
+          </ul>
+          <div class="callout">
+            <strong>Design is not outcome.</strong>
+            These mechanisms make authority explicit in source code. Whether they are understandable, fair, usable, or artistically productive requires separate study.
+          </div>
         </div>
-    </footer>
+      </div>
+    </section>
 
-    <script src="/main.js"></script>
+    <section id="benchmark" aria-labelledby="benchmark-title">
+      <h2 id="benchmark-title">A benchmark with a narrow name</h2>
+      <p class="section-intro">The benchmark times only one in-process function. It is designed to produce evidence, not a marketing number.</p>
+
+      <div class="two-column">
+        <div>
+          <h3>Declared cohorts</h3>
+          <table>
+            <tbody>
+              <tr><th>Input counts</th><td>10, 100, 250, 500, 1,000</td></tr>
+              <tr><th>Warm-up</th><td>10 calls per cohort</td></tr>
+              <tr><th>Measured</th><td>50 calls per cohort</td></tr>
+              <tr><th>Clock</th><td>Fixed evaluation timestamp</td></tr>
+              <tr><th>Seed</th><td>Recorded deterministic pseudo-random seed</td></tr>
+              <tr><th>Output</th><td>JSON with runtime, revision, method, and distribution statistics</td></tr>
+              <tr><th>Threshold</th><td>None</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>Explicit exclusions</h3>
+          <ul class="plain-list">
+            <li>network transport and clock synchronization;</li>
+            <li>serialization and Socket.IO;</li>
+            <li>Redis, OSC, rendering, and synthesis;</li>
+            <li>audience-device latency;</li>
+            <li>delivery and error rates;</li>
+            <li>connection capacity;</li>
+            <li>rehearsal and live-performance behavior.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Permitted future wording</strong>
+        A preserved result may be called “in-process consensus compute time in the recorded environment.” It cannot be relabeled as end-to-end audience latency.
+      </div>
+    </section>
+
+    <section aria-labelledby="reproduce-title">
+      <h2 id="reproduce-title">Declared reproduction path</h2>
+      <p class="section-intro">These commands remain unverified at the current branch head until a runner preserves their exact outputs.</p>
+      <pre><code>pnpm install --frozen-lockfile
+pnpm --filter @omni-dromenon/core-engine typecheck
+pnpm --filter @omni-dromenon/core-engine test
+pnpm --filter @omni-dromenon/core-engine test:bench -- \
+  --output benchmark-results/consensus-baseline.json</code></pre>
+    </section>
+
+    <section id="gates" aria-labelledby="gates-title">
+      <h2 id="gates-title">What must happen next</h2>
+      <div class="two-column">
+        <ol class="plain-list">
+          <li>Obtain runner assignment and preserve checkout, installation, compiler, test, and benchmark logs.</li>
+          <li>Retain the first JSON artifact at an exact source revision.</li>
+          <li>Repeat measurements in declared environments before stating a stable number.</li>
+          <li>Define a separate end-to-end protocol before making network or capacity claims.</li>
+        </ol>
+        <ol class="plain-list" start="5">
+          <li>Instrument delivery, ordering, duplication, disconnection, and error behavior.</li>
+          <li>Document a rehearsal before claiming performer or audience use.</li>
+          <li>Document a live performance before claiming live operation or artistic outcome.</li>
+          <li>Preserve failures, counterexamples, and revisions alongside successes.</li>
+        </ol>
+      </div>
+
+      <div class="actions">
+        <a class="button primary" href="https://github.com/organvm/metasystem-master">Inspect the repository</a>
+        <a class="button" href="https://github.com/organvm/metasystem-master/blob/main/docs/reproducibility/core-engine-evidence-status.md">Read the evidence register</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Omni-Dromenon is an Anthony Padavano / ORGANVM research and artistic software project. Source availability does not imply deployment, validation, or live use.</p>
+  </footer>
 </body>
 </html>
