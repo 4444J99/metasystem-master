@@ -62,7 +62,7 @@ const requiredWorkflowFragments = [
   'pnpm --filter @omni-dromenon/core-engine typecheck',
   'pnpm --filter @omni-dromenon/core-engine test',
   'pnpm --filter @omni-dromenon/core-engine test:bench',
-  'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02',
+  'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9',
   'if-no-files-found: error',
 ];
 for (const fragment of requiredWorkflowFragments) {
