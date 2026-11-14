@@ -1,10 +1,10 @@
 /**
- * Weighted Voting Algorithm for Omni-Dromenon-Engine
- * 
- * Implements spatial + temporal + consensus weighting for
- * aggregating audience inputs into performance parameters.
- * 
- * Validated: P95 latency <5ms for 1000 inputs
+ * Weighted voting for the Omni-Dromenon core engine.
+ *
+ * The module implements spatial, temporal, and agreement weighting for
+ * audience inputs. Performance is measured by the seeded benchmark in
+ * `src/benchmarks/consensus-bench.ts`; this source file asserts no latency
+ * threshold or production-capacity result.
  */
 
 import {
@@ -19,123 +19,99 @@ import {
   DEFAULT_WEIGHTING_CONFIG,
 } from '../types/index.js';
 
-// =============================================================================
-// WEIGHT CALCULATION
-// =============================================================================
-
-/**
- * Calculate spatial weight based on distance from stage.
- * Closer to stage = higher weight (exponential decay).
- */
+/** Calculate spatial weight using exponential decay from the stage. */
 export function calculateSpatialWeight(
   location: { x: number; y: number } | undefined,
   stagePosition: { x: number; y: number },
-  config: WeightingConfig
+  config: WeightingConfig,
 ): number {
-  if (!location) return 0.5; // Default weight for unknown location
-  
+  if (!location) return 0.5;
+
   const dx = location.x - stagePosition.x;
   const dy = location.y - stagePosition.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
-  
-  // Exponential decay: closer = higher weight
-  const normalizedDistance = distance / 100; // Assuming 100-unit venue
+  const normalizedDistance = distance / 100;
+
   return Math.exp(-config.spatialDecayRate * normalizedDistance);
 }
 
-/**
- * Calculate temporal weight based on input recency.
- * More recent inputs = higher weight (exponential decay).
- */
+/** Calculate temporal weight using exponential decay from an explicit clock. */
 export function calculateTemporalWeight(
   inputTimestamp: number,
   currentTime: number,
-  config: WeightingConfig
+  config: WeightingConfig,
 ): number {
-  const ageMs = currentTime - inputTimestamp;
-  
-  // Inputs older than window get minimal weight
+  // Treat future-dated input as age zero rather than allowing clock skew to
+  // produce a temporal component greater than one.
+  const ageMs = Math.max(0, currentTime - inputTimestamp);
+
   if (ageMs > config.temporalWindowMs) {
     return 0.01;
   }
-  
-  // Exponential decay within window
+
   const normalizedAge = ageMs / config.temporalWindowMs;
   return Math.exp(-config.temporalDecayRate * normalizedAge);
 }
 
-/**
- * Calculate consensus weight based on cluster membership.
- * Inputs agreeing with more others = higher weight.
- */
+/** Calculate agreement weight from nearby values in the current cohort. */
 export function calculateConsensusWeight(
   input: AudienceInput,
   allInputs: AudienceInput[],
-  config: WeightingConfig
+  config: WeightingConfig,
 ): number {
-  if (allInputs.length <= 1) return 1.0;
-  
+  if (allInputs.length <= 1) return 1;
+
   let agreementCount = 0;
-  const threshold = config.clusterThreshold;
-  
   for (const other of allInputs) {
     if (other.id === input.id) continue;
-    if (Math.abs(other.value - input.value) <= threshold) {
-      agreementCount++;
+    if (Math.abs(other.value - input.value) <= config.clusterThreshold) {
+      agreementCount += 1;
     }
   }
-  
-  // Normalize by total inputs
+
   return agreementCount / (allInputs.length - 1);
 }
 
-/**
- * Calculate combined weight for an input.
- */
+/** Calculate the combined scalar weight for one input. */
 export function calculateWeight(
   input: AudienceInput,
   allInputs: AudienceInput[],
   stagePosition: { x: number; y: number },
   currentTime: number,
-  config: WeightingConfig = DEFAULT_WEIGHTING_CONFIG
+  config: WeightingConfig = DEFAULT_WEIGHTING_CONFIG,
 ): number {
   const spatial = calculateSpatialWeight(input.location, stagePosition, config);
   const temporal = calculateTemporalWeight(input.timestamp, currentTime, config);
   const consensus = calculateConsensusWeight(input, allInputs, config);
-  
-  // Weighted combination (α + β + γ should ≈ 1)
-  const weight = 
-    config.spatialAlpha * spatial +
-    config.temporalBeta * temporal +
-    config.consensusGamma * consensus;
-  
-  return Math.max(0.001, Math.min(1, weight)); // Clamp to avoid zero weights
-}
+  const weight =
+    config.spatialAlpha * spatial
+    + config.temporalBeta * temporal
+    + config.consensusGamma * consensus;
 
-// =============================================================================
-// WEIGHTED INPUT GENERATION
-// =============================================================================
+  return Math.max(0.001, Math.min(1, weight));
+}
 
 /**
  * Transform raw inputs into weighted inputs.
+ *
+ * `evaluationTime` is injectable so tests and benchmarks can evaluate exactly
+ * the same temporal cohort across runs. Runtime callers may omit it.
  */
 export function weightInputs(
   inputs: AudienceInput[],
   stagePosition: { x: number; y: number },
-  config: WeightingConfig = DEFAULT_WEIGHTING_CONFIG
+  config: WeightingConfig = DEFAULT_WEIGHTING_CONFIG,
+  evaluationTime: number = Date.now(),
 ): WeightedInput[] {
-  const currentTime = Date.now();
-  
-  return inputs.map(input => {
+  return inputs.map((input) => {
     const spatialWeight = calculateSpatialWeight(input.location, stagePosition, config);
-    const temporalWeight = calculateTemporalWeight(input.timestamp, currentTime, config);
+    const temporalWeight = calculateTemporalWeight(input.timestamp, evaluationTime, config);
     const consensusWeight = calculateConsensusWeight(input, inputs, config);
-    
-    const weight = 
-      config.spatialAlpha * spatialWeight +
-      config.temporalBeta * temporalWeight +
-      config.consensusGamma * consensusWeight;
-    
+    const weight =
+      config.spatialAlpha * spatialWeight
+      + config.temporalBeta * temporalWeight
+      + config.consensusGamma * consensusWeight;
+
     return {
       ...input,
       weight: Math.max(0.001, Math.min(1, weight)),
@@ -146,86 +122,65 @@ export function weightInputs(
   });
 }
 
-// =============================================================================
-// AGGREGATION
-// =============================================================================
-
-/**
- * Calculate weighted mean of inputs.
- */
+/** Calculate a weighted mean, using 0.5 as the empty/default value. */
 export function weightedMean(inputs: WeightedInput[]): number {
   if (inputs.length === 0) return 0.5;
-  
+
   let weightedSum = 0;
   let totalWeight = 0;
-  
   for (const input of inputs) {
     weightedSum += input.value * input.weight;
     totalWeight += input.weight;
   }
-  
+
   return totalWeight > 0 ? weightedSum / totalWeight : 0.5;
 }
 
-/**
- * Calculate standard deviation of values.
- */
+/** Calculate weighted population standard deviation. */
 export function standardDeviation(inputs: WeightedInput[]): number {
   if (inputs.length < 2) return 0;
-  
+
   const mean = weightedMean(inputs);
   let sumSquaredDiff = 0;
   let totalWeight = 0;
-  
   for (const input of inputs) {
-    sumSquaredDiff += input.weight * Math.pow(input.value - mean, 2);
+    sumSquaredDiff += input.weight * ((input.value - mean) ** 2);
     totalWeight += input.weight;
   }
-  
-  return Math.sqrt(sumSquaredDiff / totalWeight);
+
+  return totalWeight > 0 ? Math.sqrt(sumSquaredDiff / totalWeight) : 0;
 }
 
-/**
- * Remove outliers using z-score method.
- */
+/** Remove observations whose weighted z-score exceeds the declared threshold. */
 export function removeOutliers(
   inputs: WeightedInput[],
-  threshold: number = 2.5
+  threshold: number = 2.5,
 ): WeightedInput[] {
   if (inputs.length < 4) return inputs;
-  
+
   const mean = weightedMean(inputs);
   const std = standardDeviation(inputs);
-  
-  if (std < 0.001) return inputs; // No variance
-  
-  return inputs.filter(input => {
+  if (std < 0.001) return inputs;
+
+  return inputs.filter((input) => {
     const zScore = Math.abs((input.value - mean) / std);
     return zScore <= threshold;
   });
 }
 
-/**
- * Apply exponential smoothing to reduce jitter.
- */
+/** Apply first-order exponential smoothing. */
 export function smoothValue(
   newValue: number,
   previousValue: number,
-  smoothingFactor: number
+  smoothingFactor: number,
 ): number {
   return previousValue + smoothingFactor * (newValue - previousValue);
 }
 
-// =============================================================================
-// CLUSTER ANALYSIS
-// =============================================================================
-
-/**
- * Identify clusters of similar inputs for bimodality detection.
- */
+/** Identify contiguous value clusters and report simple dispersion properties. */
 export function analyzeCluster(
   inputs: WeightedInput[],
-  threshold: number = 0.15
+  threshold: number = 0.15,
 ): ClusterAnalysis {
   if (inputs.length === 0) {
     return {
@@ -235,66 +190,66 @@ export function analyzeCluster(
       bimodality: false,
     };
   }
-  
-  // Simple clustering: group by value proximity
-  const sorted = [...inputs].sort((a, b) => a.value - b.value);
+
+  const sorted = [...inputs].sort((left, right) => left.value - right.value);
   const clusters: InputCluster[] = [];
   let currentCluster: WeightedInput[] = [sorted[0]];
-  
-  for (let i = 1; i < sorted.length; i++) {
-    const gap = sorted[i].value - sorted[i - 1].value;
+
+  for (let index = 1; index < sorted.length; index += 1) {
+    const gap = sorted[index].value - sorted[index - 1].value;
     if (gap <= threshold) {
-      currentCluster.push(sorted[i]);
+      currentCluster.push(sorted[index]);
     } else {
-      if (currentCluster.length > 0) {
-        clusters.push(createCluster(currentCluster));
-      }
-      currentCluster = [sorted[i]];
+      clusters.push(createCluster(currentCluster));
+      currentCluster = [sorted[index]];
     }
   }
-  
-  if (currentCluster.length > 0) {
-    clusters.push(createCluster(currentCluster));
-  }
-  
-  // Find dominant cluster (highest total weight)
-  const dominantCluster = clusters.reduce((max, cluster) =>
-    cluster.density > (max?.density ?? 0) ? cluster : max,
-    null as InputCluster | null
+  clusters.push(createCluster(currentCluster));
+
+  const dominantCluster = clusters.reduce<InputCluster | null>(
+    (current, cluster) => (
+      cluster.density > (current?.density ?? 0) ? cluster : current
+    ),
+    null,
   );
-  
-  // Calculate entropy (dispersion measure)
-  const totalWeight = inputs.reduce((sum, i) => sum + i.weight, 0);
+
+  const totalWeight = inputs.reduce((sum, input) => sum + input.weight, 0);
   let entropy = 0;
   for (const cluster of clusters) {
-    const p = cluster.density / totalWeight;
-    if (p > 0) entropy -= p * Math.log2(p);
+    const probability = cluster.density / totalWeight;
+    if (probability > 0) entropy -= probability * Math.log2(probability);
   }
-  
-  // Bimodality: two clusters with significant weight
-  const bimodality = clusters.length >= 2 &&
-    clusters[0].density > totalWeight * 0.3 &&
-    clusters[1]?.density > totalWeight * 0.3;
-  
+
+  // Cluster order is value order, not density order. Determine modality from
+  // the two densest clusters so a sparse edge cluster cannot hide two large
+  // separated groups later in the value range.
+  const densestClusters = [...clusters].sort(
+    (left, right) => right.density - left.density,
+  );
+  const bimodality = densestClusters.length >= 2
+    && densestClusters[0].density > totalWeight * 0.3
+    && (densestClusters[1]?.density ?? 0) > totalWeight * 0.3;
+
   return { clusters, dominantCluster, entropy, bimodality };
 }
 
 function createCluster(members: WeightedInput[]): InputCluster {
-  const centroid = members.reduce((sum, m) => sum + m.value, 0) / members.length;
-  const density = members.reduce((sum, m) => sum + m.weight, 0);
-  const coherence = 1 - (members.length > 1 
-    ? Math.max(...members.map(m => Math.abs(m.value - centroid)))
-    : 0);
-  
+  const centroid = members.reduce((sum, member) => sum + member.value, 0) / members.length;
+  const density = members.reduce((sum, member) => sum + member.weight, 0);
+  const coherence = 1 - (
+    members.length > 1
+      ? Math.max(...members.map((member) => Math.abs(member.value - centroid)))
+      : 0
+  );
+
   return { centroid, members, density, coherence };
 }
 
-// =============================================================================
-// CONSENSUS COMPUTATION
-// =============================================================================
-
 /**
- * Compute consensus result from weighted inputs.
+ * Compute one consensus result.
+ *
+ * `evaluationTime` controls both result time and temporal weighting. Injecting
+ * it makes a cohort reproducible; omitting it preserves normal runtime behavior.
  */
 export function computeConsensus(
   parameter: string,
@@ -302,17 +257,16 @@ export function computeConsensus(
   stagePosition: { x: number; y: number },
   config: WeightingConfig = DEFAULT_WEIGHTING_CONFIG,
   previousValue?: number,
-  mode: ConsensusMode = ConsensusMode.WEIGHTED_AVERAGE
+  mode: ConsensusMode = ConsensusMode.WEIGHTED_AVERAGE,
+  evaluationTime: number = Date.now(),
 ): ConsensusResult {
-  const timestamp = Date.now();
-  
   if (inputs.length === 0) {
     return {
       parameter,
       value: previousValue ?? 0.5,
       confidence: 0,
       inputCount: 0,
-      timestamp,
+      timestamp: evaluationTime,
       mode,
       rawMean: 0.5,
       weightedMean: 0.5,
@@ -320,87 +274,76 @@ export function computeConsensus(
       participationRate: 0,
     };
   }
-  
-  // Weight inputs
-  const weighted = weightInputs(inputs, stagePosition, config);
-  
-  // Remove outliers
+
+  const weighted = weightInputs(inputs, stagePosition, config, evaluationTime);
   const filtered = removeOutliers(weighted, config.outlierThreshold);
-  
-  // Calculate statistics
-  const rawMean = inputs.reduce((sum, i) => sum + i.value, 0) / inputs.length;
-  const wMean = weightedMean(filtered);
-  const std = standardDeviation(filtered);
-  
-  // Calculate value based on mode
+  const rawMean = inputs.reduce((sum, input) => sum + input.value, 0) / inputs.length;
+  const currentWeightedMean = weightedMean(filtered);
+  const currentStandardDeviation = standardDeviation(filtered);
+
   let value: number;
   switch (mode) {
-    case ConsensusMode.MEDIAN:
-      const sorted = filtered.sort((a, b) => a.value - b.value);
+    case ConsensusMode.MEDIAN: {
+      const sorted = [...filtered].sort((left, right) => left.value - right.value);
       value = sorted[Math.floor(sorted.length / 2)]?.value ?? 0.5;
       break;
-    case ConsensusMode.MAJORITY_VOTE:
+    }
+    case ConsensusMode.MAJORITY_VOTE: {
       const analysis = analyzeCluster(filtered);
-      value = analysis.dominantCluster?.centroid ?? wMean;
+      value = analysis.dominantCluster?.centroid ?? currentWeightedMean;
       break;
+    }
     case ConsensusMode.WEIGHTED_AVERAGE:
     default:
-      value = wMean;
+      value = currentWeightedMean;
   }
-  
-  // Apply smoothing if previous value exists
+
   if (previousValue !== undefined) {
     value = smoothValue(value, previousValue, config.smoothingFactor);
   }
-  
-  // Confidence based on agreement (inverse of std deviation)
-  const confidence = Math.max(0, 1 - std * 2);
-  
+
+  const confidence = Math.max(0, 1 - currentStandardDeviation * 2);
+
   return {
     parameter,
     value,
     confidence,
     inputCount: inputs.length,
-    timestamp,
+    timestamp: evaluationTime,
     mode,
     rawMean,
-    weightedMean: wMean,
-    standardDeviation: std,
+    weightedMean: currentWeightedMean,
+    standardDeviation: currentStandardDeviation,
     participationRate: filtered.length / inputs.length,
   };
 }
 
-// =============================================================================
-// PERFORMER OVERRIDE APPLICATION
-// =============================================================================
-
-/**
- * Apply performer override to consensus value.
- */
+/** Apply a performer's declared override mode to one consensus value. */
 export function applyOverride(
   consensusValue: number,
-  override: PerformerOverride | null
+  override: PerformerOverride | null,
 ): number {
   if (!override) return consensusValue;
-  
+
   switch (override.mode) {
     case 'absolute':
-      return override.value;
     case 'lock':
       return override.value;
-    case 'blend':
+    case 'blend': {
       const blend = override.blendFactor ?? 0.5;
       return consensusValue * (1 - blend) + override.value * blend;
+    }
     default:
       return consensusValue;
   }
 }
 
-/**
- * Check if override has expired.
- */
-export function isOverrideActive(override: PerformerOverride | null): boolean {
+/** Report whether an override is present and unexpired at an explicit clock. */
+export function isOverrideActive(
+  override: PerformerOverride | null,
+  evaluationTime: number = Date.now(),
+): boolean {
   if (!override) return false;
-  if (!override.expiresAt) return true;
-  return Date.now() < override.expiresAt;
+  if (override.expiresAt === undefined) return true;
+  return evaluationTime < override.expiresAt;
 }

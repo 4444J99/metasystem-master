@@ -1,0 +1,93 @@
+{
+  "time_utc": "2026-09-09T20:42:51.824195+00:00",
+  "candidate_identity": "worktree:sha256:eb728442ada8e0bf03f74c9fea8db623fcf2dafcec1d2c792eadc866e57e7b0e",
+  "base_revision": "18a8e31441b39af26a997d1916ae6238fb2158bd",
+  "node": "v24.19.0",
+  "pnpm": "9.15.0",
+  "typescript": "6.0.3",
+  "steps": [
+    {
+      "name": "claim-regressions",
+      "command": [
+        "node",
+        "--test",
+        "tools/check-core-claim-boundaries.test.mjs"
+      ],
+      "exit_code": 0,
+      "log": "/workspace/scratch/97a90b70ad0f/omni-work/execution-results/final-original-workspace-claim-regressions.log",
+      "log_sha256": "aa70902d147ef102417e74ad1e8d1257ea1a5b76238e2a43478ac453eef118f8",
+      "preserved_archive_member": "prior-candidate/final-original-workspace-claim-regressions.log"
+    },
+    {
+      "name": "claim-gate",
+      "command": [
+        "node",
+        "tools/check-core-claim-boundaries.mjs"
+      ],
+      "exit_code": 0,
+      "log": "/workspace/scratch/97a90b70ad0f/omni-work/execution-results/final-original-workspace-claim-gate.log",
+      "log_sha256": "6f8bc044e805703a5cdc85fc7b8ae9e9c0ceb4544274461b6ab1d538cd8424ea",
+      "preserved_archive_member": "prior-candidate/final-original-workspace-claim-gate.log"
+    },
+    {
+      "name": "structure-gate",
+      "command": [
+        "node",
+        "tools/check-core-evidence-structure.mjs"
+      ],
+      "exit_code": 0,
+      "log": "/workspace/scratch/97a90b70ad0f/omni-work/execution-results/final-original-workspace-structure-gate.log",
+      "log_sha256": "474688ca378e71f52f827a4a50a3b600271d3a171b17510430a5329a2ce82c07",
+      "preserved_archive_member": "prior-candidate/final-original-workspace-structure-gate.log"
+    },
+    {
+      "name": "frozen-install",
+      "command": [
+        "corepack",
+        "pnpm",
+        "install",
+        "--frozen-lockfile"
+      ],
+      "exit_code": 0,
+      "log": "/workspace/scratch/97a90b70ad0f/omni-work/execution-results/final-original-workspace-frozen-install.log",
+      "log_sha256": "fafc59ee514223b622ea49b9494787d456428c84990ffa2d26572c6b25850ba5",
+      "preserved_archive_member": "prior-candidate/final-original-workspace-frozen-install.log"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "corepack",
+        "pnpm",
+        "--filter",
+        "@omni-dromenon/core-engine",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "log": "/workspace/scratch/97a90b70ad0f/omni-work/execution-results/final-original-workspace-typecheck.log",
+      "log_sha256": "6eba1fde94ede80c4ab409ca7604f3e7491076e16476e404a1fff78d877b4943",
+      "preserved_archive_member": "prior-candidate/final-original-workspace-typecheck.log"
+    },
+    {
+      "name": "full-tests",
+      "command": [
+        "corepack",
+        "pnpm",
+        "--filter",
+        "@omni-dromenon/core-engine",
+        "test"
+      ],
+      "exit_code": 0,
+      "log": "/workspace/scratch/97a90b70ad0f/omni-work/execution-results/final-original-workspace-full-tests.log",
+      "log_sha256": "dccc5f3c58c63244020014fc4f5ab3ea30dc653e29cab9e5445b1b63df5981a7",
+      "preserved_archive_member": "prior-candidate/final-original-workspace-full-tests.log"
+    }
+  ],
+  "all_materialized_source_hashes_unchanged": true,
+  "workspace_file_matches_exact_repository_baseline": true,
+  "github_actions_gate_closed": false,
+  "association_to_committed_source": {
+    "source_revision": "6f1270d793217783889b5f22779f34ad93228247",
+    "verified_equal_materialized_files": 75,
+    "retrospective_retagging": false
+  }
+}
