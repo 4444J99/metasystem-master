@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import { dispatchWorkspaceCheck } from './shared/utils/dispatch-workspace';
 
 const API_URL = 'https://omni-dromenon-core-dkxnci5fua-uc.a.run.app';
 
@@ -107,19 +108,10 @@ function Performer() {
 
   const handleDispatch = async (workspaceName: string) => {
     try {
-      await fetch(`${API_URL}/metasystem/dispatch`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          workspaceName,
-          title: 'Orchestrator Checkup',
-          description: 'Routine consistency check triggered from Performance Dashboard.',
-          priority: 'normal'
-        })
-      });
-      alert(`Dispatch signal sent to ${workspaceName}`);
-    } catch (e) {
-      alert('Dispatch failed');
+      await dispatchWorkspaceCheck(API_URL, workspaceName);
+      alert(`Dispatch request accepted for ${workspaceName}`);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Dispatch failed');
     }
   };
 
