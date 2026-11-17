@@ -91,6 +91,40 @@ export function calculateWeight(
   return Math.max(0.001, Math.min(1, weight));
 }
 
+/** Batch the per-input consensus agreement counts in one sorted pass. */
+function calculateConsensusWeights(
+  inputs: AudienceInput[],
+  config: WeightingConfig,
+): number[] {
+  if (inputs.length <= 1) return inputs.map(() => 1.0);
+
+  const sorted = inputs
+    .map((input, index) => ({ index, value: input.value }))
+    .sort((a, b) => a.value - b.value);
+  const weights = new Array<number>(inputs.length);
+  let left = 0;
+  let right = 0;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const value = sorted[i].value;
+
+    while (value - sorted[left].value > config.clusterThreshold) {
+      left++;
+    }
+
+    while (
+      right + 1 < sorted.length
+      && sorted[right + 1].value - value <= config.clusterThreshold
+    ) {
+      right++;
+    }
+
+    weights[sorted[i].index] = (right - left) / (inputs.length - 1);
+  }
+
+  return weights;
+}
+
 /**
  * Transform raw inputs into weighted inputs.
  *
@@ -103,10 +137,11 @@ export function weightInputs(
   config: WeightingConfig = DEFAULT_WEIGHTING_CONFIG,
   evaluationTime: number = Date.now(),
 ): WeightedInput[] {
-  return inputs.map((input) => {
+  const consensusWeights = calculateConsensusWeights(inputs, config);
+  return inputs.map((input, index) => {
     const spatialWeight = calculateSpatialWeight(input.location, stagePosition, config);
     const temporalWeight = calculateTemporalWeight(input.timestamp, evaluationTime, config);
-    const consensusWeight = calculateConsensusWeight(input, inputs, config);
+    const consensusWeight = consensusWeights[index];
     const weight =
       config.spatialAlpha * spatialWeight
       + config.temporalBeta * temporalWeight
