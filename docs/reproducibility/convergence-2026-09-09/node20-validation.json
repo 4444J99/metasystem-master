@@ -1,0 +1,85 @@
+{
+  "source_revision": "6f1270d793217783889b5f22779f34ad93228247",
+  "classification": "local_node20_compatibility_execution",
+  "node_version": "v20.20.2",
+  "node_binary_sha256": "6295488653f0d93b0a157841746fef7e72cc4328cfb60c4bbe0ca2668a836ffd",
+  "pnpm": "9.15.0",
+  "dependency_installation": "reused unchanged pnpm9.15 frozen dependency tree installed in the local Node24 environment; no fresh Node20 installation claim",
+  "steps": [
+    {
+      "name": "claim-regressions",
+      "command": [
+        "node",
+        "--test",
+        "tools/check-core-claim-boundaries.test.mjs"
+      ],
+      "exit_code": 0,
+      "log": "claim-regressions.log",
+      "log_sha256": "b3c5faa5b8157bb157f28e8af6a6ff539dbcb1deac441ee53f99a0c388404b77"
+    },
+    {
+      "name": "claim-gate",
+      "command": [
+        "node",
+        "tools/check-core-claim-boundaries.mjs"
+      ],
+      "exit_code": 0,
+      "log": "claim-gate.log",
+      "log_sha256": "6f8bc044e805703a5cdc85fc7b8ae9e9c0ceb4544274461b6ab1d538cd8424ea"
+    },
+    {
+      "name": "structure-gate",
+      "command": [
+        "node",
+        "tools/check-core-evidence-structure.mjs"
+      ],
+      "exit_code": 0,
+      "log": "structure-gate.log",
+      "log_sha256": "474688ca378e71f52f827a4a50a3b600271d3a171b17510430a5329a2ce82c07"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "corepack",
+        "pnpm",
+        "--filter",
+        "@omni-dromenon/core-engine",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "log": "typecheck.log",
+      "log_sha256": "6eba1fde94ede80c4ab409ca7604f3e7491076e16476e404a1fff78d877b4943"
+    },
+    {
+      "name": "full-tests",
+      "command": [
+        "corepack",
+        "pnpm",
+        "--filter",
+        "@omni-dromenon/core-engine",
+        "test"
+      ],
+      "exit_code": 0,
+      "log": "full-tests.log",
+      "log_sha256": "3675daa5313eb44d4958a85dbc4adde3008ccb7b7e1c53a13912592dc277574f"
+    },
+    {
+      "name": "benchmark",
+      "command": [
+        "corepack",
+        "pnpm",
+        "--filter",
+        "@omni-dromenon/core-engine",
+        "test:bench",
+        "--",
+        "--output",
+        "/workspace/scratch/97a90b70ad0f/omni-work/committed-results/node20/benchmark.json"
+      ],
+      "exit_code": 0,
+      "log": "benchmark.log",
+      "log_sha256": "544b3bea8b7e4f45a334243553899fc64a0b5347a59530e54a2cc2c5e287419c"
+    }
+  ],
+  "github_actions_executed": false,
+  "observed_at": "2026-09-09T20:55:02.254553+00:00"
+}

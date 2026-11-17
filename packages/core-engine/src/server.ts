@@ -1,22 +1,20 @@
 /**
  * Omni-Dromenon-Engine Core Server
- * 
+ *
  * Express + Socket.io server for real-time audience participation.
  * Handles WebSocket connections, consensus computation, and
  * parameter distribution.
  */
 
-import express from 'express';
-import { createServer } from 'http';
+import { randomUUID } from 'node:crypto';
+import { createServer } from 'node:http';
+import express, { type Express } from 'express';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { v4 as uuidv4 } from 'crypto';
 
 import { config } from './config.js';
 import {
   DEFAULT_PARAMETERS,
   DEFAULT_VENUE,
-  type AudienceInput,
-  type PerformerOverride,
   ParticipantRole,
   SessionStatus,
 } from './types/index.js';
@@ -29,10 +27,9 @@ import { createAggregator } from './consensus/parameter-aggregation.js';
 // SERVER INITIALIZATION
 // =============================================================================
 
-const app = express();
+const app: Express = express();
 const httpServer = createServer(app);
 
-// Create Socket.io server
 const io = new SocketIOServer(httpServer, {
   cors: {
     origin: config.server.corsOrigins,
@@ -44,11 +41,10 @@ const io = new SocketIOServer(httpServer, {
   transports: [...config.websocket.transports],
 });
 
-// Create session state
-const sessionId = uuidv4();
+const sessionId = randomUUID();
 let sessionStatus: SessionStatus = SessionStatus.PENDING;
+let shuttingDown = false;
 
-// Create bus and handlers
 const bus = createBus();
 const aggregator = createAggregator(
   sessionId,
@@ -66,13 +62,13 @@ const aggregator = createAggregator(
       smoothingFactor: config.consensus.smoothingFactor,
       outlierThreshold: 2.5,
     },
-  }
+  },
 );
 
 const audienceHandler = createAudienceInputsHandler(
   bus,
   sessionId,
-  DEFAULT_PARAMETERS.map(p => p.id)
+  DEFAULT_PARAMETERS.map((parameter) => parameter.id),
 );
 
 const performerSubs = createPerformerSubscriptions(bus, sessionId);
@@ -83,9 +79,8 @@ const performerSubs = createPerformerSubscriptions(bus, sessionId);
 
 app.use(express.json());
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({
+app.get('/health', (_request, response) => {
+  response.json({
     status: 'ok',
     sessionId,
     sessionStatus,
@@ -97,9 +92,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Session info
-app.get('/session', (req, res) => {
-  res.json({
+app.get('/session', (_request, response) => {
+  response.json({
     sessionId,
     status: sessionStatus,
     parameters: DEFAULT_PARAMETERS,
@@ -109,83 +103,82 @@ app.get('/session', (req, res) => {
   });
 });
 
-// Current values
-app.get('/values', (req, res) => {
-  res.json(aggregator.getAllValues());
+app.get('/values', (_request, response) => {
+  response.json(aggregator.getAllValues());
 });
 
 // =============================================================================
 // SOCKET NAMESPACES
 // =============================================================================
 
-// Audience namespace
 const audienceNs = io.of('/audience');
 
 audienceNs.on('connection', (socket: Socket) => {
-  const clientId = socket.handshake.query.clientId as string || uuidv4();
-  
+  const queryClientId = socket.handshake.query.clientId;
+  const clientId = typeof queryClientId === 'string' ? queryClientId : randomUUID();
+
   console.log(`[Audience] Connected: ${clientId}`);
-  
-  // Send initial state
+
   socket.emit('session:state', {
     sessionId,
     status: sessionStatus,
     parameters: DEFAULT_PARAMETERS,
     values: aggregator.getAllValues(),
   });
-  
-  // Handle parameter input
+
   socket.on('input', (data: { parameter: string; value: number }) => {
     if (sessionStatus !== SessionStatus.ACTIVE) {
-      socket.emit('error', { code: 'SESSION_NOT_ACTIVE', message: 'Session is not active' });
+      socket.emit('error', {
+        code: 'SESSION_NOT_ACTIVE',
+        message: 'Session is not active',
+      });
       return;
     }
-    
+
     const result = audienceHandler.handleInput(
       clientId,
       data.parameter,
-      data.value
+      data.value,
     );
-    
+
     if (!result.accepted) {
       socket.emit('input:rejected', { reason: result.reason });
     }
   });
-  
-  // Handle location update
+
   socket.on('location', (data: { x: number; y: number; zone?: string }) => {
     audienceHandler.updateClientLocation(clientId, data);
   });
-  
-  // Handle disconnect
+
   socket.on('disconnect', () => {
     console.log(`[Audience] Disconnected: ${clientId}`);
     audienceHandler.removeClient(clientId);
   });
 });
 
-// Performer namespace
 const performerNs = io.of('/performer');
 
 performerNs.on('connection', (socket: Socket) => {
-  const performerId = socket.handshake.query.performerId as string || uuidv4();
-  const displayName = socket.handshake.query.displayName as string || 'Performer';
-  
+  const queryPerformerId = socket.handshake.query.performerId;
+  const queryDisplayName = socket.handshake.query.displayName;
+  const performerId = typeof queryPerformerId === 'string'
+    ? queryPerformerId
+    : randomUUID();
+  const displayName = typeof queryDisplayName === 'string'
+    ? queryDisplayName
+    : 'Performer';
+
   console.log(`[Performer] Connected: ${performerId} (${displayName})`);
-  
-  // Register performer
-  const session = performerSubs.registerPerformer(performerId, displayName);
-  
-  // Handle authentication
+  performerSubs.registerPerformer(performerId, displayName);
+
   socket.on('auth', (data: { secret: string }) => {
     const authenticated = performerSubs.authenticate(performerId, data.secret);
     performerSubs.setAuthenticated(performerId, authenticated);
-    
+
     if (authenticated) {
       performerSubs.subscribeToAll(performerId);
       socket.emit('auth:success', { performerId });
-      
-      // Send full state
+
       socket.emit('session:state', {
         sessionId,
         status: sessionStatus,
@@ -198,8 +191,7 @@ performerNs.on('connection', (socket: Socket) => {
       socket.emit('auth:failed', { reason: 'invalid_secret' });
     }
   });
-  
-  // Handle override request
+
   socket.on('override', (data: {
     parameter: string;
     value: number;
@@ -211,10 +203,9 @@ performerNs.on('connection', (socket: Socket) => {
       performerId,
       ...data,
     });
-    
+
     if (result.success) {
       socket.emit('override:success', { override: result.override });
-      // Apply to aggregator
       if (result.override) {
         aggregator.setOverride(result.override);
       }
@@ -222,8 +213,7 @@ performerNs.on('connection', (socket: Socket) => {
       socket.emit('override:failed', { reason: result.reason });
     }
   });
-  
-  // Handle override clear
+
   socket.on('override:clear', (data: { parameter: string }) => {
     const success = performerSubs.clearOverride(performerId, data.parameter);
     if (success) {
@@ -231,8 +221,7 @@ performerNs.on('connection', (socket: Socket) => {
       socket.emit('override:cleared', { parameter: data.parameter });
     }
   });
-  
-  // Handle session commands
+
   socket.on('session:start', () => {
     const session = performerSubs.getPerformer(performerId);
     if (session?.isAuthenticated) {
@@ -241,7 +230,7 @@ performerNs.on('connection', (socket: Socket) => {
       console.log(`[Session] Started by ${performerId}`);
     }
   });
-  
+
   socket.on('session:pause', () => {
     const session = performerSubs.getPerformer(performerId);
     if (session?.isAuthenticated && session.permissions.canPause) {
@@ -249,7 +238,7 @@ performerNs.on('connection', (socket: Socket) => {
       io.emit('session:paused', { sessionId });
     }
   });
-  
+
   socket.on('session:resume', () => {
     const session = performerSubs.getPerformer(performerId);
     if (session?.isAuthenticated) {
@@ -257,7 +246,7 @@ performerNs.on('connection', (socket: Socket) => {
       io.emit('session:resumed', { sessionId });
     }
   });
-  
+
   socket.on('session:end', () => {
     const session = performerSubs.getPerformer(performerId);
     if (session?.isAuthenticated && session.permissions.canEnd) {
@@ -265,8 +254,7 @@ performerNs.on('connection', (socket: Socket) => {
       io.emit('session:ended', { sessionId });
     }
   });
-  
-  // Handle disconnect
+
   socket.on('disconnect', () => {
     console.log(`[Performer] Disconnected: ${performerId}`);
     performerSubs.removePerformer(performerId);
@@ -277,20 +265,16 @@ performerNs.on('connection', (socket: Socket) => {
 // CONSENSUS LOOP
 // =============================================================================
 
-// Subscribe to batch inputs for consensus
 bus.subscribe(BusEvent.AUDIENCE_INPUT_BATCH, (inputs) => {
   aggregator.addInputs(inputs);
 });
 
-// Consensus computation interval
-setInterval(() => {
+const consensusTimer = setInterval(() => {
   if (sessionStatus !== SessionStatus.ACTIVE) return;
-  
+
   const snapshot = aggregator.createSnapshot();
-  
-  // Broadcast to all connected clients
   const values = aggregator.getAllValues();
-  
+
   audienceNs.emit('values', values);
   performerNs.emit('values', values);
   performerNs.emit('snapshot', {
@@ -304,25 +288,28 @@ setInterval(() => {
 // GRACEFUL SHUTDOWN
 // =============================================================================
 
-function shutdown() {
+function shutdown(): void {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
   console.log('[Server] Shutting down...');
-  
   sessionStatus = SessionStatus.ENDED;
   io.emit('session:ended', { sessionId, reason: 'server_shutdown' });
-  
+
+  clearInterval(consensusTimer);
   audienceHandler.destroy();
   performerSubs.destroy();
-  
+  bus.dispose();
+
   httpServer.close(() => {
     console.log('[Server] HTTP server closed');
     process.exit(0);
   });
-  
-  // Force close after timeout
+
   setTimeout(() => {
     console.log('[Server] Forcing shutdown');
     process.exit(1);
-  }, 5000);
+  }, 5_000).unref();
 }
 
 process.on('SIGTERM', shutdown);
