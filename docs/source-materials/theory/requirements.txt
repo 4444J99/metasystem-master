@@ -13,7 +13,7 @@ flask-cors>=6.0.5      # CORS support
 watchdog>=7.1.0        # File system monitoring for sorting daemon
 
 # Optional: ML/AI for file classification
-sentence-transformers>=6.2.0  # For semantic embeddings (optional)
+sentence-transformers>=6.3.0  # For semantic embeddings (optional)
 
 # Utilities
 python-magic>=0.4.27    # File type detection
@@ -26,8 +26,8 @@ pytest-cov>=7.1.0      # Coverage reporting
 pytest-mock>=3.17.0    # Mocking support
 pytest-benchmark>=5.3.1 # Performance benchmarks
 freezegun>=1.5.5       # Time mocking
-faker>=40.44.0          # Generate test data
-coverage>=7.17.2        # Coverage measurement
+faker>=40.54.0          # Generate test data
+coverage>=7.17.3        # Coverage measurement
 coverage-badge>=1.1.2  # Coverage badges
 
 # Test utilities
